@@ -8,3 +8,18 @@
 .studeo-welcome{max-width:none;background:radial-gradient(ellipse at top right,#bba1f624,transparent 65%);border-radius:26px;padding:32px;margin:6px 0 24px;border:1px solid #ffffff12}.studeo-welcome h1{max-width:720px;font-size:clamp(36px,5vw,60px);letter-spacing:-1.5px}.studeo-welcome p{max-width:650px}.studeo-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0 32px}.studeo-stats>div{border:1px solid #ffffff18;background:#1b1e2b;padding:20px;border-radius:18px}.studeo-stats strong{display:block;font-size:34px;color:#d8caff}.studeo-stats span{font-size:13px;color:#b3afc4}.studeo-dashboard{margin:26px 0}.studeo-dashboard .student-item{margin:12px 0}.studeo-dashboard h3{margin-top:12px}.studeo-library{margin-top:30px}.studeo-price{font-size:32px;font-weight:700}.studeo-price small{font-size:14px;font-weight:400}#studentApp select:focus-visible{outline:3px solid #e1cfff;outline-offset:3px}#studentApp main{min-width:0}.student-brand{white-space:nowrap}.student-brand small{white-space:normal;overflow-wrap:anywhere}@media(max-width:600px){.studeo-welcome{padding:24px 18px}.studeo-stats{gap:8px}.studeo-stats>div{padding:14px 10px}.studeo-stats strong{font-size:28px}.studeo-stats span{font-size:11px}.student-brand{white-space:normal}}
 .course-builder{margin-bottom:26px}.course-builder details{margin-top:18px}.course-outline{display:grid;gap:20px}.course-module{margin-top:18px}.course-lessons{list-style:none;margin:18px 0;padding:0}.course-lessons li+li{border-top:1px solid #ffffff12}.course-lessons button{display:flex;text-align:left;gap:14px;width:100%;padding:15px 8px!important;background:transparent!important;color:#e6dff7!important;font-weight:500!important;line-height:1.6}.course-lessons button span{color:#c4b0ff;flex:0 0 20px}.course-reading{max-width:850px}.course-reading>.student-pre{font-size:18px;line-height:1.9}.course-reading summary,.course-builder summary{cursor:pointer;padding:12px 0}.course-reading details .student-pre{max-height:400px;overflow:auto;font-size:14px}
 .student-actions .student-premium{border:1px solid #d2b9ff;background:#352748;color:#e6d3ff;font-weight:700}
+
+/* Shared visual language with the built-in course, with an accessible mobile menu. */
+#studentApp.in-course .student-shell{max-width:none;padding:0}
+#studentApp.in-course .student-head{padding:18px 24px;margin:0}
+#studentApp.in-course .student-shell>nav{display:none}
+#studentApp.in-course #studentStatus{margin:0 24px}
+.student-course-workspace{display:grid;grid-template-columns:292px minmax(0,1fr);min-height:80vh}
+.student-course-sidebar{background:var(--sidebar,#17152a);color:#e9e6f8;padding:22px 14px;max-height:100vh;overflow-y:auto;position:sticky;top:0;align-self:start}
+#studentApp .student-course-sidebar button{background:transparent;color:#cfc9e5;border:0;text-align:left;display:flex;width:100%;border-radius:12px;padding:11px 13px}
+#studentApp .student-course-sidebar button.active{background:#6e5ae5;color:white}
+#studentApp .student-course-sidebar button:hover{background:#393052;color:white}
+.student-course-content{padding:28px 36px 60px;min-width:0;max-width:1450px;width:100%;margin:auto}
+.student-course-content .student-hero{margin-top:0}
+.student-card progress{width:100%;accent-color:#6552c8}
+@media(max-width:800px){.student-course-workspace{grid-template-columns:1fr}.student-course-sidebar{position:static;max-height:300px}.student-course-content{padding:20px 14px}.student-course-sidebar .logo{padding-bottom:10px}}
