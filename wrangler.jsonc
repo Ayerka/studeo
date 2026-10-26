@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "studeo",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2026-10-26",
+  "workers_dev": true
+}

@@ -37,3 +37,7 @@ Migracje znajdują się w `supabase/migrations/`; stosuj je w kolejności na now
 Publiczny klucz Supabase może występować w kodzie klienta; bezpieczeństwo danych zapewniają uwierzytelnianie i polityki RLS. Pliki `.env*` poza przykładem są ignorowane przez Git.
 
 Więcej informacji: `docs/STUDEO-BETA.md` i `docs/PRIVATE-SUBJECT-COURSES.md`.
+
+## Automatyczna publikacja
+
+Konfiguracja docelowego hostingu Cloudflare Workers jest przygotowana w `wrangler.jsonc`. Połączenie kont i pierwsze wdrożenie opisuje [instrukcja](docs/CLOUDFLARE.md). GitHub Actions uruchamia testy i sprawdza build; nie wdraża bazy ani funkcji Supabase.
