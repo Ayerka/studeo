@@ -1,4 +1,13 @@
 export const MAX_FILE=20*1024*1024;
+// Plans: during the beta every account is on premium_beta. The server (my_plan) is the source of truth;
+// this fallback matches today's behaviour when the plan cannot be read. Null limit = not limited by plan.
+export const FALLBACK_PLAN={key:'premium_beta',name:'Premium (beta)',limits:{subjects:null,storage_bytes:null,file_bytes:MAX_FILE,ai_per_day:null}};
+export function normalizePlan(row){
+ if(!row||typeof row.plan_key!=='string'||!row.limits||typeof row.limits!=='object')return FALLBACK_PLAN;
+ const n=v=>Number.isFinite(v)&&v>=0?v:null,l=row.limits;
+ return {key:row.plan_key,name:String(row.plan_name||row.plan_key),limits:{subjects:n(l.subjects),storage_bytes:n(l.storage_bytes),file_bytes:Math.min(n(l.file_bytes)??MAX_FILE,MAX_FILE),ai_per_day:n(l.ai_per_day)}};
+}
+export function fileLimitText(plan){return `Plik przekracza ${Math.round(plan.limits.file_bytes/1048576)} MB.`;}
 export function normalizeAnswer(v){return String(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ł/g,'l').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
 export function makeStudy(pages){
  const cards=[];const seen=new Set();
