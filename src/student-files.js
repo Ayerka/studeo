@@ -9,3 +9,5 @@ export async function readMaterial(file){
  for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n),content=await page.getTextContent();const text=content.items.map(i=>i.str+(i.hasEOL?'\n':' ')).join('');total+=text.length;if(total>120000)throw Error('PDF zawiera za dużo tekstu. Podziel go na mniejsze części.');pages.push({page:n,text});page.cleanup();}return pages;
  }finally{await task.destroy();}
 }
+
+export {getDocument};
