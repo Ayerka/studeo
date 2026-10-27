@@ -15,7 +15,7 @@ Zakres: baza i Storage w Supabase (projekt kioqgerkpbgntlbavtro), funkcja studen
 1. **Worker na Cloudflare nie stosował `public/_headers`.** Wysyłał tylko nosniff i Referrer-Policy, więc brakowało m.in. ochrony przed osadzeniem strony w ramce (clickjacking), HSTS i nagłówka CSP. Teraz `worker/headers.js` dodaje nagłówki do każdej odpowiedzi, a test uruchamia prawdziwy build Workera.
 2. **Rozjazd CSP.** Plik `_headers` miał szerszą łączność (`*.supabase.co` — dowolny projekt Supabase) i nie zawierał `worker-src`/`media-src` z `blob:`, a `microphone=()` blokowałoby notatki głosowe. Ujednolicono z `index.html` (łączność tylko z projektem Studeo, mikrofon dozwolony dla własnej strony). Test pilnuje zgodności.
 3. Plik `/_headers` nie jest już publicznie serwowany jako zasób.
-4. Migracja 009: zdjęcie zbędnych uprawnień (funkcja wyzwalacza limitu przedmiotów, TRUNCATE/TRIGGER/REFERENCES na `piano_piano_progress`). Migracja nie jest wdrożona tym PR.
+4. Migracja 009: zdjęcie zbędnych uprawnień (funkcja wyzwalacza limitu przedmiotów, TRUNCATE/TRIGGER/REFERENCES na `piano_piano_progress`).
 
 ## Do zrobienia ręcznie (panele Supabase i Cloudflare)
 
@@ -24,9 +24,15 @@ Zakres: baza i Storage w Supabase (projekt kioqgerkpbgntlbavtro), funkcja studen
 3. **Cloudflare:** reguły ograniczania liczby żądań dla `/api/*` oraz alert zużycia.
 4. **OpenAI:** miesięczny limit wydatków na kluczu API.
 
-## Decyzje właścicielki
+## Wdrożone 27.10.2026 (zgoda właścicielki)
 
-- **Limit AI w becie.** Plan `premium_beta` nie ma dziennego limitu AI, a rejestracja jest otwarta. Jedno złośliwe konto może wygenerować duże koszty u dostawcy AI. Zalecany jawny limit dla każdego konta (np. 20 na dobę) oraz limit globalny; zmiana to jedna aktualizacja wiersza w `public.plans`, bez zmiany kodu.
+- **Migracja 009** (zdjęcie zbędnych uprawnień) i **010** (limity AI) wdrożone na produkcji.
+- **Limit AI w becie: 20 użyć na konto na dobę UTC** (`plans.premium_beta.ai_per_day`) oraz **globalny limit 300 na dobę** (`app_settings.ai_global_per_day`, tabela niedostępna dla API). Obie wartości zmienia się jednym UPDATE bez zmiany kodu. Globalna wartość 300 to wartość robocza dobrana przez Claude'a; dostosuj ją do budżetu u dostawcy AI.
+- Test na żywej bazie (transakcja wycofana): konto w planie premium_beta wykonało 20 wywołań, 21. zostało odrzucone.
+- Ekran Premium w aplikacji informuje o limicie 20 użyć na dobę.
+
+## Decyzje otwarte
+
 - **Funkcja student-ai ma `verify_jwt=false`.** To zgodne z nowymi kluczami publishable; funkcja sama weryfikuje sesję użytkownika. Nie zmieniać bez przeglądu.
 
 ## Znane ograniczenia

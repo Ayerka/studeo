@@ -1,3 +1,7 @@
+## Limit AI w becie — migracja 010 (27.10.2026)
+
+Wszystkie konta mają Premium w becie, ale AI jest ograniczone ze względów bezpieczeństwa i kosztów: 20 użyć na konto na dobę UTC oraz globalny limit 300 na dobę. Ta zmiana zastępuje zapisy powyżej o braku dziennego limitu AI. Limity zmienia się w bazie (`plans`, `app_settings`).
+
 ## Aktualizacja Premium w becie — 26.10.2026
 
 Wszystkie obecne i nowe konta otrzymują Premium bez opłat. Migracja 007 znosi dzienny limit 3 prób na osobę oraz 20 łącznie, zachowuje uwierzytelnianie i rejestr użycia. Przycisk Premium znajduje się w nagłówku obok profilu. Limity techniczne plików i dostawcy AI pozostają. Sprzedaż jest nadal wyłączona. Poniższy dokument opisuje wcześniejszą wersję bety; ta aktualizacja zastępuje zapisy o dziennym limicie AI.
