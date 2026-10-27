@@ -2,6 +2,10 @@
 
 Wszystkie obecne i nowe konta otrzymują Premium bez opłat. Migracja 007 znosi dzienny limit 3 prób na osobę oraz 20 łącznie, zachowuje uwierzytelnianie i rejestr użycia. Przycisk Premium znajduje się w nagłówku obok profilu. Limity techniczne plików i dostawcy AI pozostają. Sprzedaż jest nadal wyłączona. Poniższy dokument opisuje wcześniejszą wersję bety; ta aktualizacja zastępuje zapisy o dziennym limicie AI.
 
+## Fundament planów — migracja 008 (jeszcze niewdrożona)
+
+Każde konto nadal ma Premium w becie. Migracja 008 dodaje tabele `plans` i `account_plans`, funkcję `my_plan()` oraz plan domyślny `premium_beta`, który zachowuje dzisiejsze zachowanie (bez limitu przedmiotów i AI, plik do 20 MB). Gotowe, ale nieprzypisane plany: `free` (5 przedmiotów, 3 próby AI dziennie — wartości robocze do zatwierdzenia) i `premium`. Limity AI i przedmiotów są egzekwowane w bazie na podstawie planu; limit miejsca (`storage_bytes`) jest tylko zapisany w konfiguracji i jeszcze nieegzekwowany. Pliki 500 MB nadal wymagają osobnego przepływu wysyłania. Użytkownik nie może zmienić planu z przeglądarki; przypisania wykonuje wyłącznie serwer (migracja lub webhook płatności). Przełączenie wszystkich kont na `free` to zmiana planu domyślnego, a nie zmiana kodu. Migrację uruchamiaj osobnym krokiem po sprawdzeniu historii migracji (w repozytorium brak pliku 006).
+
 # Studeo — wdrożenie bety z biznesplanu z 26.10.2026
 
 Decyzja właścicielki: bezpłatna beta, Premium później. Aktualizujemy istniejącą stronę; URL i projekt Supabase pozostają bez zmian. „Od zera do hakera” pozostaje kursem w bibliotece. Konto nie otrzymuje przedmiotów innego użytkownika.
