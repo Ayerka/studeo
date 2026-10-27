@@ -23,3 +23,20 @@ test('invalid citation returns retryable 422 and never saves a deck',async()=>{
  const res=await handleStudy(new Request('https://example.test/api/study',{method:'POST',headers:{Authorization:'Bearer fake'},body:JSON.stringify({materialId:'00000000-0000-0000-0000-000000000001'})}),{OPENAI_API_KEY:'fake'},mock);
  assert.equal(res.status,422);assert.equal((await res.json()).code,'SOURCE_CITATION_INVALID');assert.equal(saved,false);
 });
+
+test('source references hydrate original quotes and pages without model transcription',async()=>{
+ const {generateStudy,sourceFragments,resolveReferences}=await import('../worker/study.js');
+ const pages=[{page:12,text:'Dziennik obserwacji medialnej – omówienie zadania domowego. '.repeat(30)}];
+ const fragments=sourceFragments(pages);
+ assert.equal(fragments.map(f=>f.text).join(''),pages[0].text);
+ for(const f of fragments){assert.ok(f.text.length<=1000);assert.equal(f.page,12);}
+ assert.throws(()=>resolveReferences({sections:[{sourceRef:'made-up'}],cards:[],questions:[]},fragments),{code:'SOURCE_CITATION_INVALID'});
+ const result=await generateStudy(pages,'fake',async(url,opts)=>{
+  const body=JSON.parse(opts.body),input=JSON.parse(body.input),schema=body.text.format.schema;
+  assert.deepEqual(schema.properties.cards.items.properties.sourceRef.enum,input.source_fragments.map(f=>f.ref));
+  assert.equal(schema.properties.cards.items.properties.quote,undefined);
+  const data=deck('unused');for(const item of [...data.sections,...data.cards,...data.questions]){delete item.page;delete item.quote;item.sourceRef=input.source_fragments[1].ref;}
+  return Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(data)}]}]});
+ });
+ assert.equal(result.sections[0].quote,fragments[1].text);assert.equal(result.sections[0].page,12);assert.equal(result.sections[0].sourceRef,undefined);
+});
