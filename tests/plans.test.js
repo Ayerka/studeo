@@ -6,10 +6,10 @@ import {FALLBACK_PLAN,MAX_FILE,normalizePlan,fileLimitText} from '../src/student
 
 const A='00000000-0000-0000-0000-000000000001',B='00000000-0000-0000-0000-000000000002';
 const migration=name=>readFile(new URL(`../supabase/migrations/${name}`,import.meta.url),'utf8');
-async function setup(){
+async function setup(extra=[]){
  const db=new PGlite();
  await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated; insert into auth.users values ('${A}'),('${B}');`);
- for(const m of ['002_student.sql','004_student_ai_quota.sql','007_premium_beta.sql','008_plans.sql'])await db.exec(await migration(m));
+ for(const m of ['002_student.sql','004_student_ai_quota.sql','007_premium_beta.sql','008_plans.sql',...extra])await db.exec(await migration(m));
  return db;
 }
 const as=(db,id)=>db.exec(`reset role; set role authenticated; select set_config('request.jwt.claim.sub','${id}',false);`);
@@ -70,4 +70,20 @@ test('frontend plan helper falls back safely and never exceeds the 20 MB storage
  const f=normalizePlan({plan_key:'free',plan_name:'Podstawowy',limits:{subjects:5,file_bytes:'bad',ai_per_day:-1}});
  assert.equal(f.limits.subjects,5);assert.equal(f.limits.file_bytes,MAX_FILE);assert.equal(f.limits.ai_per_day,null);
  assert.equal(fileLimitText(FALLBACK_PLAN),'Plik przekracza 20 MB.');
+});
+
+test('beta AI cost protection: 20 per account per day and a server-only global daily cap',async()=>{
+ const db=await setup(['010_ai_limits.sql']);
+ try{
+  await as(db,A);
+  assert.equal((await db.query('select limits from public.my_plan()')).rows[0].limits.ai_per_day,20);
+  for(let i=0;i<20;i++)await db.query('select public.student_claim_ai()');
+  await assert.rejects(db.query('select public.student_claim_ai()'),/Daily limit/);
+  await as(db,B);await db.query('select public.student_claim_ai()');
+  await assert.rejects(db.query('select * from public.app_settings'),e=>e.code==='42501');
+  await assert.rejects(db.query(`update public.app_settings set value='99999'`),e=>e.code==='42501');
+  await db.exec(`reset role; update public.app_settings set value='22' where key='ai_global_per_day'; delete from public.student_ai_usage; insert into public.student_ai_usage(user_id,day,attempts) values ('${A}',(now() at time zone 'UTC')::date,21);`);
+  await as(db,B);await db.query('select public.student_claim_ai()');
+  await assert.rejects(db.query('select public.student_claim_ai()'),/Daily limit/);
+ }finally{await db.close();}
 });
