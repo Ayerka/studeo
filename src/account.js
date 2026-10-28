@@ -1,3 +1,4 @@
+import {mountAccountUsage} from './account-usage.js';
 const configURL=import.meta.env.VITE_SUPABASE_URL;
 const configKey=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const configured=!!(configURL&&configKey&&!configURL.includes('YOUR_PROJECT'));
@@ -35,9 +36,10 @@ function showAccount(mode='login',note=''){
  ${!profile&&!change?'<label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254" />':''}
  ${!profile&&!reset?`<label for="password">Hasło${register||change?' (minimum 12 znaków)':''}</label><input id="password" name="password" type="password" autocomplete="${register||change?'new-password':'current-password'}" required minlength="${register||change?12:1}" maxlength="128" />`:''}
  <button class="primary-btn" type="submit">${profile?'Zapisz imię':reset?'Wyślij link':change?'Zapisz nowe hasło':register?'Utwórz konto':'Zaloguj się'}</button></form>
- ${profile?'<button class="ghost-btn" id="backCourse">Wróć do nauki</button><button class="ghost-btn" id="logout">Wyloguj się</button><button class="ghost-btn" id="passwordReset">Zmień hasło przez e-mail</button><hr><h2>Przenieś stare postępy</h2><p>W starej aplikacji kliknij „Eksportuj postępy”, a tutaj wybierz pobrany plik JSON. Import zastąpi postępy na tym koncie po potwierdzeniu.</p><label for="importFile">Plik z postępami</label><input id="importFile" type="file" accept="application/json,.json"><button class="ghost-btn" id="downloadAccount">Pobierz kopię danych</button>':!change?`<button class="ghost-btn" data-auth="${register||reset?'login':'register'}">${register||reset?'Mam konto — zaloguj się':'Utwórz konto'}</button>${!reset?'<button class="ghost-btn" data-auth="reset">Nie pamiętam hasła</button>':''}`:'<button class="ghost-btn" id="logout">Wyloguj się</button>'}`}
+ ${profile?'<button class="ghost-btn" id="backCourse">Wróć do nauki</button><button class="ghost-btn" id="logout">Wyloguj się</button><button class="ghost-btn" id="passwordReset">Zmień hasło przez e-mail</button><hr><section id="accountUsage"></section><hr><h2>Przenieś stare postępy</h2><p>W starej aplikacji kliknij „Eksportuj postępy”, a tutaj wybierz pobrany plik JSON. Import zastąpi postępy na tym koncie po potwierdzeniu.</p><label for="importFile">Plik z postępami</label><input id="importFile" type="file" accept="application/json,.json"><button class="ghost-btn" id="downloadAccount">Pobierz kopię danych</button>':!change?`<button class="ghost-btn" data-auth="${register||reset?'login':'register'}">${register||reset?'Mam konto — zaloguj się':'Utwórz konto'}</button>${!reset?'<button class="ghost-btn" data-auth="reset">Nie pamiętam hasła</button>':''}`:'<button class="ghost-btn" id="logout">Wyloguj się</button>'}`}
  <p id="accountMessage" class="message" role="status">${h(note)}</p><small>Hasła obsługuje Supabase Auth. Aplikacja nie zapisuje haseł lokalnie.</small>`;
  account.querySelector('input')?.focus();
+ if(profile&&client){const owner=user?.id,gen=generation;mountAccountUsage(account.querySelector('#accountUsage'),client,()=>user?.id===owner&&generation===gen&&authMode==='profile');}
 }
 function banner(text){
  let b=$('syncBanner');if(!b){b=document.createElement('div');b.id='syncBanner';b.className='sync-banner';b.setAttribute('role','alert');document.body.append(b);}
@@ -98,7 +100,7 @@ document.addEventListener('click',async e=>{
  if(t.dataset.auth){showAccount(t.dataset.auth);return;}
  if(t.id==='previewCourse'){account.hidden=true;app.hidden=false;render();status('Podgląd — postępy nie są zapisywane');return;}
  if(t.id==='profileButton'){showAccount(configured?'profile':'login');return;}
- if(t.id==='backCourse'){account.hidden=true;app.hidden=!!studentPortal;studentPortal?.show();return;}
+ if(t.id==='backCourse'){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal&&user)await studentPortal.login(user);return;}
  if(t.id==='studentHome'){await cloudSave();if(dirty)return;app.hidden=true;studentPortal?.show();return;}
  if(t.id==='logout'){
   await cloudSave();if(dirty&&!confirm('Masz niezapisane zmiany. Wylogować się i je odrzucić?'))return;

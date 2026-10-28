@@ -1,7 +1,6 @@
 export const MAX_FILE=20*1024*1024;
-// Plans: during the beta every account is on premium_beta. The server (my_plan) is the source of truth;
-// this fallback matches today's behaviour when the plan cannot be read. Null limit = not limited by plan.
-export const FALLBACK_PLAN={key:'premium_beta',name:'Premium (beta)',limits:{subjects:null,storage_bytes:null,file_bytes:MAX_FILE,ai_per_day:null}};
+// Missing server data must not claim Premium or unlimited access.
+export const FALLBACK_PLAN={key:'unknown',name:'Plan niedostępny',limits:{subjects:0,storage_bytes:0,file_bytes:MAX_FILE,ai_per_day:0}};
 export function normalizePlan(row){
  if(!row||typeof row.plan_key!=='string'||!row.limits||typeof row.limits!=='object')return FALLBACK_PLAN;
  const n=v=>Number.isFinite(v)&&v>=0?v:null,l=row.limits;

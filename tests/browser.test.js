@@ -2,11 +2,12 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
+import {mountAccountUsage} from '../src/account-usage.js';
 import {LECTURE_MULTI} from '../src/lecture-multi.js';
 import {SECURITY_PLUS,pickSecurityQuestions} from '../src/security-plus.js';
 import {normalizeProgress,safeAnswers} from '../src/state.js';
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
-const source=(await readFile(new URL('../src/course.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/account.js',import.meta.url),'utf8')).replace('import.meta.env.VITE_SUPABASE_URL',"'https://test.supabase.co'").replace('import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY',"'public-test-key'");
+const source=(await readFile(new URL('../src/course.js',import.meta.url),'utf8'))+'\n'+(await readFile(new URL('../src/account.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replace('import.meta.env.VITE_SUPABASE_URL',"'https://test.supabase.co'").replace('import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY',"'public-test-key'");
 const tick=()=>new Promise(r=>setTimeout(r,20));
 async function setup(){
  const dom=new JSDOM(html,{url:'https://course.example',runScripts:'outside-only',pretendToBeVisual:true});
@@ -14,7 +15,7 @@ async function setup(){
  const client={auth:{onAuthStateChange(fn){callback=fn;},async signOut(){callback('SIGNED_OUT',null);return {};},async updateUser(){return {};},async resetPasswordForEmail(){return {};},async signInWithPassword(){return {};},async signUp(){return {};}},
  from(){return {select(){return {eq(_key,id){return {async maybeSingle(){return {data:rows[id]||null};}};}};}};},
  async rpc(_name,args){calls.push({owner,...args});if(fail)return {error:{code:'NETWORK'}};if((rows[owner]?.revision||0)!==args.expected_revision)return {error:{code:'40001'}};rows[owner]={payload:structuredClone(args.new_payload),revision:args.expected_revision+1};return {data:rows[owner].revision};}};
- Object.assign(dom.window,{createClient:()=>client,LECTURE_MULTI,SECURITY_PLUS,pickSecurityQuestions,normalizeProgress,safeAnswers,structuredClone,TextEncoder,scrollTo(){},confirm:()=>true});
+ Object.assign(dom.window,{mountAccountUsage,createClient:()=>client,LECTURE_MULTI,SECURITY_PLUS,pickSecurityQuestions,normalizeProgress,safeAnswers,structuredClone,TextEncoder,scrollTo(){},confirm:()=>true});
  dom.window.eval(source+"\nwindow.testEval=(code)=>eval(code);");
  const login=async id=>{owner=id;callback('SIGNED_IN',{user:{id,email:id+'@example.test',user_metadata:{}}});await tick();};
  await login('A');return {dom,rows,calls,login,fail:()=>{fail=true;},recover:()=>{fail=false;}};
