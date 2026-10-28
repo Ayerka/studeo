@@ -6,33 +6,32 @@ Strona: https://studeo.ayerka13.workers.dev
 
 ## Co jest w repozytorium
 
-Repozytorium zawiera kopię kodu źródłowego i migracje bazy. Konta, postępy, prywatne materiały i sekrety pozostają w Supabase — nie są częścią tej kopii. Aktualizacja repozytorium sama nie publikuje zmian na stronie. Nie skonfigurowano automatycznego wdrażania z GitHuba.
+Repozytorium zawiera kopię kodu źródłowego i migracje bazy. Konta, postępy, prywatne materiały i sekrety pozostają w Supabase — nie są częścią tej kopii. Cloudflare GitHub Builds automatycznie publikuje gałąź main po udanym budowaniu. GitHub Actions osobno sprawdza testy i build.
 
-## Aplikacja w React
+## Kod produkcyjny i prototyp React
 
-Aplikacja została przepisana do nowoczesnego stosu **React + TypeScript + Vite**, z zachowaniem pełnej logiki biznesowej, polskiego interfejsu, stylów CSS i testów:
+Produkcja korzysta z modułów JavaScript składanych przez `scripts/assemble.mjs` do `src/main.js`. Zawiera izolację kont, synchronizację, generowanie kursów przez AI, OCR i zarządzanie plikami. Edytuj moduły źródłowe, nie wygenerowany plik.
 
-- **Architektura React**: Modularne komponenty (`LandingPage`, `CourseApp`, `StudentPortal`, `AccountModal`, `Toast`).
-- **Kurs „Od zera do hakera”**: 34 interaktywne lekcje w 4 blokach tematycznych (Podstawy, Kryptografia, Aktorzy zagrożeń, Malware), fiszki, słownik pojęć, interaktywne diagramy edukacyjne, generator testów i pytań CompTIA Security+ SY0-701.
-- **Strefa studenta („Moje przedmioty”)**: Prywatne przedmioty, materiały PDF i tekstowe z podglądem i OCR, notatki tekstowe i nagrania audio, tablica zadań Kanban z powtarzalnością i notatkami roboczymi, kalendarz zajęć, algorytm powtórek w odstępach (SRS) oraz kursy generowane z własnych materiałów.
-- **Backend i synchronizacja**: Integracja z Supabase (Auth, PostgreSQL, RLS, Storage) oraz bezpieczny tryb offline/preview z lokalnym zapisem.
+Komponenty React/TypeScript pozostają jako niedokończony prototyp i nie są uruchamiane na produkcji. [Stan migracji i brakujące zabezpieczenia](docs/REACT-MIGRATION.md).
 
 ## Uruchomienie
 
-Node.js 22 lub nowszy oraz npm:
+Node.js 22.12 lub nowszy oraz npm:
 
 ```sh
-npm install
-npm run dev      # Uruchamia serwer developerski na porcie 3000
-npm test         # Uruchamia pełny zestaw testów
-npm run build    # Buduje zoptymalizowaną aplikację React
+npm ci
+cp .env.example .env.local
+# Uzupełnij publiczną konfigurację Supabase w .env.local.
+npm run dev
+npm test
+npm run build
 ```
 
 ## Hosting i backend
 
 Build tworzy Worker w `dist/server/index.js` z osadzonym frontendem oraz metadane Sites. To nie jest zwykły katalog statyczny do GitHub Pages. Ścieżki `/api/study` i `/api/task-help` przekazują żądania do funkcji Supabase `student-ai`. Sam serwer deweloperski Vite nie udostępnia tych ścieżek backendu.
 
-Istniejąca strona działa na Sites. Supabase obsługuje logowanie, Postgres, RLS i prywatny magazyn plików. Przy przenoszeniu na inny projekt sprawdź także konfigurację Supabase w `worker/proxy.js`, adresy przekierowań Auth oraz konfigurację funkcji.
+Strona działa na Cloudflare Workers. Supabase obsługuje logowanie, Postgres, RLS i prywatny magazyn plików. Przy przenoszeniu na inny projekt sprawdź także konfigurację Supabase w `worker/proxy.js`, adresy przekierowań Auth oraz konfigurację funkcji.
 
 Migracje znajdują się w `supabase/migrations/`; stosuj je w kolejności na nowej bazie lub uruchamiaj wyłącznie brakujące migracje na istniejącej. Nie uruchamiaj ponownie wszystkich migracji na produkcji. Funkcja AI jest w `supabase/functions/student-ai/index.ts`. Wymaga konfiguracji sekretu OpenAI po stronie Supabase i wdrożenia funkcji. Nie umieszczaj tego sekretu w kodzie frontendu ani w repozytorium.
 
