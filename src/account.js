@@ -1,3 +1,5 @@
+import {landingMarkup} from './landing.js';
+import './landing.css';
 import {mountAccountUsage} from './account-usage.js';
 const configURL=import.meta.env.VITE_SUPABASE_URL;
 const configKey=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -5,6 +7,7 @@ const configured=!!(configURL&&configKey&&!configURL.includes('YOUR_PROJECT'));
 const client=configured?createClient(configURL,configKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 let user=null,revision=0,lastSnapshot='',dirty=false,saving=false,conflict=false,ready=false,generation=0,authMode='login',recovering=false;
 const app=$('courseApp'),account=$('account');
+const landing=document.createElement('div');landing.id='landing';landing.hidden=true;landing.innerHTML=landingMarkup();document.body.prepend(landing);
 const studentPortal=typeof createStudentPortal==='function'&&client?createStudentPortal(client,{exportCourse:()=>snapshot(),openCourse:()=>{app.hidden=false;account.hidden=true;render();},openProfile:()=>showAccount('profile'),logout:async()=>{await cloudSave();if(dirty)throw Error('Najpierw zapisz oczekujące zmiany kursu.');const {error}=await client.auth.signOut();if(error)throw error;clearAccount();showAccount();}}):null;
 function snapshot(){return {version:2,progress:saved,quiz:{answers:quizAnswers,shown:quizShown},flashIndex,exam:{questions:examQs.map(q=>q.id?(q.id.startsWith('lecture-multi-')?{lectureId:q.id}:{securityId:q.id}):{lesson:q.lesson,index:LESSONS.find(l=>l.id===q.lesson)?.quiz.findIndex(x=>x.q===q.q)}),answers:examAnswers,index:examIndex,type:examType,active:view==='exam-active'},history:examHistory};}
 let examHistory=[];
@@ -26,10 +29,11 @@ function restore(raw={}){
 }
 function status(text){$('syncStatus').textContent=text;}
 function message(text){const el=$('accountMessage');if(el)el.textContent=text;}
-function showAccount(mode='login',note=''){
- authMode=mode;app.hidden=true;account.hidden=false;
+function showAccount(mode='landing',note=''){
+ authMode=mode;app.hidden=true;account.hidden=mode==='landing';landing.hidden=mode!=='landing';studentPortal?.hide();
+ if(mode==='landing'){window.scrollTo(0,0);return;}
  const profile=mode==='profile', reset=mode==='reset',change=mode==='change',register=mode==='register';
- account.innerHTML=`<div class="brand">✦ STUDEO · BETA</div><h1>${profile?'Twoja przestrzeń nauki':reset?'Odzyskaj dostęp':change?'Ustaw nowe hasło':register?'Zacznij swoją naukę':'Dobrze Cię widzieć.'}</h1><p>${profile?'Twoje postępy są przypisane do Twojego konta.': 'Twoje studia w jednym miejscu: przedmioty, notatki, zadania i powtórki. Bezpłatne Premium w becie dla każdego, bez karty płatniczej.'}</p>
+ account.innerHTML=`${!profile?'<button class="ghost-btn" data-auth="landing">← O Studeo</button>':''}<div class="brand">✦ STUDEO · BETA</div><h1>${profile?'Twoja przestrzeń nauki':reset?'Odzyskaj dostęp':change?'Ustaw nowe hasło':register?'Zacznij swoją naukę':'Dobrze Cię widzieć.'}</h1><p>${profile?'Twoje postępy są przypisane do Twojego konta.': 'Twoje studia w jednym miejscu: przedmioty, notatki, zadania i powtórki. Bezpłatne Premium w becie dla każdego, bez karty płatniczej.'}</p>
  ${!configured?'<p class="message">Podgląd projektu. Logowanie będzie dostępne po podłączeniu bazy Supabase.</p><button class="primary-btn" id="previewCourse">Obejrzyj kurs</button>':`<form id="accountForm">
  ${profile?`<p>Zalogowana jako: <strong>${h(user?.email)}</strong></p>`:''}
  ${register||profile?`<label for="displayName">Jak mamy Cię nazywać?</label><input id="displayName" name="name" autocomplete="nickname" maxlength="60" value="${h(profile?user?.user_metadata?.display_name||'':'')}" />`:''}
@@ -73,7 +77,7 @@ async function authChange(event,session){
  clearAccount();user=session.user;
  if(recovering){showAccount('change');return;}
  showAccount('login','Wczytuję Twoje postępy…');
- try{await loadCloud();if(user&&ready){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal)await studentPortal.login(user);}}catch{showAccount('login','Nie udało się pobrać postępów. Sprawdź połączenie i konfigurację bazy, następnie odśwież stronę.');}
+ try{await loadCloud();if(user&&ready){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal)await studentPortal.login(user);if(new URLSearchParams(location.search).get('welcome')==='1')showAccount('landing');}}catch{showAccount('login','Nie udało się pobrać postępów. Sprawdź połączenie i konfigurację bazy, następnie odśwież stronę.');}
 }
 async function submitAccount(e){
  e.preventDefault();const form=e.target,button=form.querySelector('button');button.disabled=true;message('Chwileczkę…');
@@ -97,7 +101,7 @@ function downloadSnapshot(){const blob=new Blob([JSON.stringify({app:'Cyber od z
 document.addEventListener('submit',e=>{if(e.target.id==='accountForm')submitAccount(e);});
 document.addEventListener('click',async e=>{
  const t=e.target.closest('button');if(!t)return;
- if(t.dataset.auth){showAccount(t.dataset.auth);return;}
+ if(t.dataset.auth){if(['login','register'].includes(t.dataset.auth)&&user&&ready){landing.hidden=true;account.hidden=true;app.hidden=!!studentPortal;studentPortal?.show();history.replaceState({},'',location.pathname);return;}if(t.dataset.auth!=='landing')history.replaceState({},'',location.pathname);showAccount(t.dataset.auth);window.scrollTo(0,0);return;}
  if(t.id==='previewCourse'){account.hidden=true;app.hidden=false;render();status('Podgląd — postępy nie są zapisywane');return;}
  if(t.id==='profileButton'){showAccount(configured?'profile':'login');return;}
  if(t.id==='backCourse'){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal&&user)await studentPortal.login(user);return;}

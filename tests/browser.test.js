@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
+import {landingMarkup} from '../src/landing.js';
 import {mountAccountUsage} from '../src/account-usage.js';
 import {LECTURE_MULTI} from '../src/lecture-multi.js';
 import {SECURITY_PLUS,pickSecurityQuestions} from '../src/security-plus.js';
@@ -15,7 +16,7 @@ async function setup(){
  const client={auth:{onAuthStateChange(fn){callback=fn;},async signOut(){callback('SIGNED_OUT',null);return {};},async updateUser(){return {};},async resetPasswordForEmail(){return {};},async signInWithPassword(){return {};},async signUp(){return {};}},
  from(){return {select(){return {eq(_key,id){return {async maybeSingle(){return {data:rows[id]||null};}};}};}};},
  async rpc(_name,args){calls.push({owner,...args});if(fail)return {error:{code:'NETWORK'}};if((rows[owner]?.revision||0)!==args.expected_revision)return {error:{code:'40001'}};rows[owner]={payload:structuredClone(args.new_payload),revision:args.expected_revision+1};return {data:rows[owner].revision};}};
- Object.assign(dom.window,{mountAccountUsage,createClient:()=>client,LECTURE_MULTI,SECURITY_PLUS,pickSecurityQuestions,normalizeProgress,safeAnswers,structuredClone,TextEncoder,scrollTo(){},confirm:()=>true});
+ Object.assign(dom.window,{landingMarkup,mountAccountUsage,createClient:()=>client,LECTURE_MULTI,SECURITY_PLUS,pickSecurityQuestions,normalizeProgress,safeAnswers,structuredClone,TextEncoder,scrollTo(){},confirm:()=>true});
  dom.window.eval(source+"\nwindow.testEval=(code)=>eval(code);");
  const login=async id=>{owner=id;callback('SIGNED_IN',{user:{id,email:id+'@example.test',user_metadata:{}}});await tick();};
  await login('A');return {dom,rows,calls,login,fail:()=>{fail=true;},recover:()=>{fail=false;}};
@@ -50,7 +51,7 @@ test('an unfinished exam resumes with its selected answer after re-login',async(
 });
 test('unconfigured preview opens course without saving',()=>{
  const dom=new JSDOM(html,{url:'http://localhost:5173',runScripts:'outside-only',pretendToBeVisual:true});
- try{Object.assign(dom.window,{LECTURE_MULTI,normalizeProgress,safeAnswers,structuredClone,TextEncoder,scrollTo(){}});dom.window.eval(source.replace("'https://test.supabase.co'",'undefined').replace("'public-test-key'",'undefined'));dom.window.document.getElementById('previewCourse').click();assert.equal(dom.window.document.getElementById('courseApp').hidden,false);}finally{dom.window.close();}
+ try{Object.assign(dom.window,{landingMarkup,LECTURE_MULTI,normalizeProgress,safeAnswers,structuredClone,TextEncoder,scrollTo(){}});dom.window.eval(source.replace("'https://test.supabase.co'",'undefined').replace("'public-test-key'",'undefined'));dom.window.document.querySelector('#landing [data-auth=login]').click();dom.window.document.getElementById('previewCourse').click();assert.equal(dom.window.document.getElementById('courseApp').hidden,false);}finally{dom.window.close();}
 });
 test('Security+ bank has valid unique questions across five domains',()=>{
  assert.equal(SECURITY_PLUS.length,30);
@@ -131,5 +132,19 @@ test('lecture 4 content and exam restore without replacing earlier progress',asy
   assert.equal(w.testEval('examQs.length'),10);assert.ok(w.testEval("examQs.every(q=>q.lesson.startsWith('w4-'))"));
   await s.login('B');assert.equal(w.testEval('saved.done.length'),0);
   await s.login('A');assert.equal(w.testEval('examType'),'4');assert.equal(w.testEval('examQs.length'),10);assert.ok(w.testEval("saved.done.includes('w3-phishing')"));
+ }finally{w.close();}
+});
+
+test('signed-out welcome page explains plans and routes to registration, login and reset without exposing account data',async()=>{
+ const s=await setup(),w=s.dom.window,d=w.document;
+ try{
+  await w.testEval("authChange('SIGNED_OUT',null)");
+  assert.equal(d.getElementById('landing').hidden,false);assert.equal(d.getElementById('account').hidden,true);assert.equal(d.getElementById('courseApp').hidden,true);
+  assert.match(d.getElementById('landing').textContent,/100 użyć AI dziennie/);assert.match(d.getElementById('landing').textContent,/Ceny po becie nie zostały jeszcze ustalone/);
+  const ids=new Set([...d.querySelectorAll('#landing [id]')].map(x=>x.id));
+  for(const a of d.querySelectorAll('#landing a[href^="#"]'))assert.ok(ids.has(a.hash.slice(1)));
+  d.querySelector('#landing [data-auth=register]').click();assert.equal(d.getElementById('landing').hidden,true);assert.ok(d.getElementById('displayName'));assert.match(d.getElementById('account').textContent,/Utwórz konto/);
+  d.querySelector('#account [data-auth=landing]').click();assert.equal(d.getElementById('landing').hidden,false);
+  d.querySelector('#landing [data-auth=login]').click();assert.ok(d.getElementById('email'));d.querySelector('#account [data-auth=reset]').click();assert.equal(d.getElementById('password'),null);assert.match(d.getElementById('account').textContent,/Wyślij link/);
  }finally{w.close();}
 });
