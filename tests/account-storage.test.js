@@ -22,3 +22,11 @@ test('profile displays real usage, escapes names, confirms deletion and refreshe
  const tick=()=>new Promise(r=>setTimeout(r,10));
  try{mountAccountUsage(host,client,()=>true);await tick();assert.match(host.textContent,/4 \/ 100/);assert.equal(host.querySelector('img'),null);host.querySelector('[data-usage-action=delete]').click();await tick();assert.ok(!calls.includes('remove'));confirmDelete=true;host.querySelector('[data-usage-action=delete]').click();await tick();assert.ok(calls.indexOf('remove')<calls.indexOf('student_detach_file'));assert.match(host.textContent,/Plik usunięty/);assert.match(host.textContent,/0,000 GB/);}finally{globalThis.confirm=old;dom.window.close();}
 });
+
+test('removing only the original binary keeps generated course current; text edits still require update',async()=>{
+ const {coursePlan}=await import('../src/subject-course.js');const source={id:'s',subject_id:'sub',kind:'material',revision:2,payload:{fileRemoved:true,pages:[{page:1,text:'A'.repeat(120)}]}};
+ const snap={id:'snapshot',subject_id:'sub',kind:'material',payload:{courseSnapshot:{version:1,key:'s:1:1',sourceId:'s',part:1},pages:source.payload.pages}};
+ const deck={id:'deck',subject_id:'sub',kind:'deck',payload:{sourceId:'snapshot',lessonDone:{0:true}}};
+ let plan=coursePlan([source,snap,deck],'sub');assert.equal(plan.current.length,1);assert.equal(plan.pending.length,0);assert.equal(plan.current[0].deck.payload.lessonDone[0],true);
+ source.payload.pages=[{page:1,text:'B'.repeat(120)}];plan=coursePlan([source,snap,deck],'sub');assert.equal(plan.pending.length,1);assert.equal(plan.old.length,1);
+});

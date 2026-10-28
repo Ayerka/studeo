@@ -23,7 +23,7 @@ export function coursePlan(entries,subjectId){
  const snapshots=entries.filter(e=>e.subject_id===subjectId&&e.payload?.courseSnapshot?.version===1);
  const modules=entries.filter(e=>e.subject_id===subjectId&&e.kind==='deck'&&!e.archived&&snapshots.some(s=>s.id===e.payload.sourceId));
  const current=[];const pending=[];
- for(const job of jobs){const snapshot=snapshots.find(s=>s.payload.courseSnapshot.key===job.key&&JSON.stringify(s.payload.pages)===JSON.stringify(job.pages));const deck=snapshot&&modules.find(d=>d.payload.sourceId===snapshot.id);if(deck)current.push({job,snapshot,deck});else pending.push({...job,snapshot});}
+ for(const job of jobs){const snapshot=snapshots.find(s=>(s.payload.courseSnapshot.key===job.key||(job.source.payload.fileRemoved===true&&s.payload.courseSnapshot.sourceId===job.source.id&&s.payload.courseSnapshot.part===job.part))&&JSON.stringify(s.payload.pages)===JSON.stringify(job.pages));const deck=snapshot&&modules.find(d=>d.payload.sourceId===snapshot.id);if(deck)current.push({job,snapshot,deck});else pending.push({...job,snapshot});}
  const old=modules.filter(m=>!current.some(x=>x.deck.id===m.id));
  return {jobs,current,pending,old,skipped};
 }
