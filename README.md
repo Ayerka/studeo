@@ -8,23 +8,25 @@ Strona: https://cyber-od-zera-michelle.ejm-chatgpt.chatgpt.site/
 
 Repozytorium zawiera kopię kodu źródłowego i migracje bazy. Konta, postępy, prywatne materiały i sekrety pozostają w Supabase — nie są częścią tej kopii. Aktualizacja repozytorium sama nie publikuje zmian na stronie. Nie skonfigurowano automatycznego wdrażania z GitHuba.
 
+## Aplikacja w React
+
+Aplikacja została przepisana do nowoczesnego stosu **React + TypeScript + Vite**, z zachowaniem pełnej logiki biznesowej, polskiego interfejsu, stylów CSS i testów:
+
+- **Architektura React**: Modularne komponenty (`LandingPage`, `CourseApp`, `StudentPortal`, `AccountModal`, `Toast`).
+- **Kurs „Od zera do hakera”**: 34 interaktywne lekcje w 4 blokach tematycznych (Podstawy, Kryptografia, Aktorzy zagrożeń, Malware), fiszki, słownik pojęć, interaktywne diagramy edukacyjne, generator testów i pytań CompTIA Security+ SY0-701.
+- **Strefa studenta („Moje przedmioty”)**: Prywatne przedmioty, materiały PDF i tekstowe z podglądem i OCR, notatki tekstowe i nagrania audio, tablica zadań Kanban z powtarzalnością i notatkami roboczymi, kalendarz zajęć, algorytm powtórek w odstępach (SRS) oraz kursy generowane z własnych materiałów.
+- **Backend i synchronizacja**: Integracja z Supabase (Auth, PostgreSQL, RLS, Storage) oraz bezpieczny tryb offline/preview z lokalnym zapisem.
+
 ## Uruchomienie
 
-Node.js 22.12 lub nowszy oraz npm:
+Node.js 22 lub nowszy oraz npm:
 
 ```sh
-npm ci
-cp .env.example .env.local
-# Uzupełnij URL Supabase i publiczny klucz w .env.local.
-npm run dev
+npm install
+npm run dev      # Uruchamia serwer developerski na porcie 3000
+npm test         # Uruchamia pełny zestaw testów
+npm run build    # Buduje zoptymalizowaną aplikację React
 ```
-
-```sh
-npm test
-npm run build
-```
-
-Polecenia automatycznie uruchamiają `scripts/assemble.mjs`. Edytuj moduły w `src/`, nie wygenerowany `src/main.js`.
 
 ## Hosting i backend
 

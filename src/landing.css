@@ -41,3 +41,55 @@
 }
 #landing .lp-adv .lp-hl{background:#ece4fa;border-color:#d8c9f3}
 #landing .lp-half{display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;background:linear-gradient(90deg,currentColor 50%,transparent 50%);vertical-align:-2px}
+
+/* Conversion Hero Highlights & Interactive Cards */
+#landing .lp-hero-highlights{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;margin-bottom:8px}
+#landing .lp-hero-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#45336d;background:#efeaf7;border:1px solid #dcd1ed;padding:6px 12px;border-radius:8px}
+#landing .lp-hero-pill span{color:#7053db;font-weight:800}
+
+#landing .lp-demo-toggle{display:flex;gap:6px;margin-bottom:12px;background:#f3eff8;padding:4px;border-radius:8px}
+#landing .lp-demo-tab{flex:1;border:none;background:transparent;padding:6px 8px;font-size:11px;font-weight:600;color:#6b607d;border-radius:6px;cursor:pointer;transition:all .15s}
+#landing .lp-demo-tab.active{background:#fff;color:#7053db;box-shadow:0 2px 6px rgba(112,83,219,0.12)}
+
+#landing .lp-source-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#4f348e;background:#e5daf7;padding:3px 8px;border-radius:4px;margin-bottom:6px}
+
+/* About, Legal & Contact Sections */
+#landing .lp-about-grid{margin-top:20px}
+#landing .lp-legal-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:24px}
+#landing .lp-legal-card{background:#fff;border:1px solid #ddd7e5;border-radius:18px;padding:36px;box-shadow:0 4px 16px rgba(41,34,55,0.03)}
+#landing .lp-legal-badge{display:inline-block;font-size:9px;font-weight:750;letter-spacing:1px;color:#7053db;background:#f2ebfc;padding:4px 10px;border-radius:99px;margin-bottom:14px}
+#landing .lp-legal-card h3{font-size:24px;margin-bottom:8px;line-height:1.2}
+#landing .lp-legal-date{font-size:12px;color:var(--lp-muted);margin:0 0 24px;padding-bottom:16px;border-bottom:1px solid #eeeaf2}
+#landing .lp-legal-content{font-size:13px;line-height:1.75;color:#443d52;max-height:480px;overflow-y:auto;padding-right:12px}
+#landing .lp-legal-content::-webkit-scrollbar{width:6px}
+#landing .lp-legal-content::-webkit-scrollbar-track{background:#f5f2f8;border-radius:4px}
+#landing .lp-legal-content::-webkit-scrollbar-thumb{background:#cfc5df;border-radius:4px}
+#landing .lp-legal-content h4{font-size:14px;font-weight:700;color:var(--lp-ink);margin:20px 0 8px}
+#landing .lp-legal-content h4:first-child{margin-top:0}
+#landing .lp-legal-content p{font-size:13px;margin:8px 0;color:inherit}
+#landing .lp-legal-content ul{padding-left:18px;margin:8px 0}
+#landing .lp-legal-content li{margin:6px 0}
+
+#landing .lp-contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:24px}
+#landing .lp-contact-card{background:#fff;border:1px solid #ddd7e5;border-radius:18px;padding:32px 28px;display:flex;flex-direction:column}
+#landing .lp-contact-icon{font-size:28px;margin-bottom:16px;display:inline-block}
+#landing .lp-contact-card h3{font-size:19px;margin-bottom:10px}
+#landing .lp-contact-card p{font-size:13px;color:var(--lp-muted);margin:0 0 16px;flex:1}
+#landing .lp-contact-link{display:inline-block;font-size:15px;font-weight:700;color:var(--lp-purple);text-decoration:none;margin-bottom:10px}
+#landing .lp-contact-link:hover{text-decoration:underline}
+#landing .lp-contact-time{font-size:11px;color:#8f889c}
+
+#landing .lp-footer{display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;border-top:1px solid #e4dee9;padding-block:36px}
+#landing .lp-footer-brand{display:flex;align-items:center;gap:18px}
+#landing .lp-footer-brand p{margin:0;font-size:12px;color:var(--lp-muted)}
+#landing .lp-footer-links{display:flex;flex-wrap:wrap;gap:20px;font-size:12px;font-weight:600}
+#landing .lp-footer-links a{color:var(--lp-muted);text-decoration:none;transition:color .15s}
+#landing .lp-footer-links a:hover{color:var(--lp-purple)}
+
+@media(max-width:900px){
+  #landing .lp-legal-grid{grid-template-columns:1fr}
+  #landing .lp-contact-grid{grid-template-columns:1fr}
+  #landing .lp-footer{flex-direction:column;align-items:flex-start}
+}
+
+

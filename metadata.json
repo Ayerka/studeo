@@ -1,0 +1,8 @@
+{
+  "name": "Studeo",
+  "description": "Polski niezbędnik studenta: notatki, kalendarz, zadania, fiszki z powtórkami oraz kurs Od zera do hakera i kursy tworzone z materiałów.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "permissions": []
+}

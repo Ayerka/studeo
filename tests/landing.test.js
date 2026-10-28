@@ -8,8 +8,8 @@ const d=dom.window.document,text=d.body.textContent.replace(/\s+/g,' ');
 
 test('landing leads with the competitive advantages from the business plan',()=>{
  assert.equal(d.querySelectorAll('h1').length,1);
- assert.match(d.querySelector('h1').textContent,/Całe studia/);
- assert.match(d.querySelector('h1').textContent,/pokazuje źródło/);
+ assert.match(d.querySelector('h1').textContent,/Zamiast zarywać noce|Całe studia/);
+ assert.match(d.querySelector('h1').textContent,/Studeo robi resztę|slajdy|sesj/);
  for(const id of ['lp-advantages','lp-how','lp-compare','lp-source','lp-privacy','lp-plans','lp-faq'])assert.ok(d.getElementById(id),`missing section ${id}`);
  for(const phrase of ['Zamiast czterech aplikacji','Gotowe od pierwszego dnia','AI z Twoich materiałów','Powtórki we właściwym momencie','Po polsku','Skany też się liczą'])assert.ok(text.toLowerCase().includes(phrase.toLowerCase()),phrase);
  assert.ok(d.querySelector('#lp-top [data-auth=register]'),'primary call to action in the hero');
