@@ -1,6 +1,6 @@
 # Plany i pliki
 
-Migracja `011_account_storage.sql` wymaga 008 i 010. Nie uruchamiaj jej ponownie: jednorazowo przestawia obecne przypisania na premium_beta, ustawia Premium jako domyślne dla nowych kont. Nie usuwa plików, postępów ani treści. Zachowuje globalny limit AI 300/dobę z 010.
+Migracja `011_account_storage.sql` wymaga 008 i 010. Nie uruchamiaj jej ponownie: jednorazowo przestawia obecne przypisania na premium_beta, ustawia Premium jako domyślne dla nowych kont. Nie usuwa plików, postępów ani treści. Zachowuje globalny limit AI z 010 (zapisany w `app_settings.ai_global_per_day`; 28.10.2026 ustawiony na 1000/dobę, zmiana jednym UPDATE).
 
 - Basic (`free`): 5 000 000 000 bajtów, 5 użyć AI/dobę UTC.
 - Premium i Premium beta: 20 000 000 000 bajtów, 100 użyć AI/dobę UTC.

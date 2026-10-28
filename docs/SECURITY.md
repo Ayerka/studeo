@@ -27,9 +27,9 @@ Zakres: baza i Storage w Supabase (projekt kioqgerkpbgntlbavtro), funkcja studen
 ## Wdrożone 27.10.2026 (zgoda właścicielki)
 
 - **Migracja 009** (zdjęcie zbędnych uprawnień) i **010** (limity AI) wdrożone na produkcji.
-- **Limit AI w becie: 20 użyć na konto na dobę UTC** (`plans.premium_beta.ai_per_day`) oraz **globalny limit 300 na dobę** (`app_settings.ai_global_per_day`, tabela niedostępna dla API). Obie wartości zmienia się jednym UPDATE bez zmiany kodu. Globalna wartość 300 to wartość robocza dobrana przez Claude'a; dostosuj ją do budżetu u dostawcy AI.
-- Test na żywej bazie (transakcja wycofana): konto w planie premium_beta wykonało 20 wywołań, 21. zostało odrzucone.
-- Ekran Premium w aplikacji informuje o limicie 20 użyć na dobę.
+- **Limit AI w becie:** obecnie 100 użyć na konto na dobę UTC (`plans.premium_beta.ai_per_day`, ustawione migracją 011; w tym PR-ze wdrożono najpierw 20) oraz **globalny limit 1000 na dobę** (`app_settings.ai_global_per_day`, tabela niedostępna dla API; 28.10.2026 podniesiony z 300 na polecenie właścicielki). Obie wartości zmienia się jednym UPDATE bez zmiany kodu. Przy 100 użyciach na konto globalny limit wyczerpuje już 10 aktywnych kont, więc w OpenAI ustaw też miesięczny limit wydatków.
+- Test na żywej bazie (transakcja wycofana) przy limicie 20: 20 wywołań przeszło, 21. zostało odrzucone.
+- Ekran Premium w aplikacji pokazuje aktualne limity planu.
 
 ## Decyzje otwarte
 

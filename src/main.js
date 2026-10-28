@@ -88,12 +88,16 @@ if(t.id==='startExam'){examType=$('examScope').value;startExam();return}if(t.dat
 });
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&document.activeElement?.id==='flipFlash'){e.preventDefault();flashReveal=!flashReveal;render();}});
 
+import {landingMarkup} from './landing.js';
+import './landing.css';
+import {mountAccountUsage} from './account-usage.js';
 const configURL=import.meta.env.VITE_SUPABASE_URL;
 const configKey=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const configured=!!(configURL&&configKey&&!configURL.includes('YOUR_PROJECT'));
 const client=configured?createClient(configURL,configKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 let user=null,revision=0,lastSnapshot='',dirty=false,saving=false,conflict=false,ready=false,generation=0,authMode='login',recovering=false;
 const app=$('courseApp'),account=$('account');
+const landing=document.createElement('div');landing.id='landing';landing.hidden=true;landing.innerHTML=landingMarkup();document.body.prepend(landing);
 const studentPortal=typeof createStudentPortal==='function'&&client?createStudentPortal(client,{exportCourse:()=>snapshot(),openCourse:()=>{app.hidden=false;account.hidden=true;render();},openProfile:()=>showAccount('profile'),logout:async()=>{await cloudSave();if(dirty)throw Error('Najpierw zapisz oczekujące zmiany kursu.');const {error}=await client.auth.signOut();if(error)throw error;clearAccount();showAccount();}}):null;
 function snapshot(){return {version:2,progress:saved,quiz:{answers:quizAnswers,shown:quizShown},flashIndex,exam:{questions:examQs.map(q=>q.id?(q.id.startsWith('lecture-multi-')?{lectureId:q.id}:{securityId:q.id}):{lesson:q.lesson,index:LESSONS.find(l=>l.id===q.lesson)?.quiz.findIndex(x=>x.q===q.q)}),answers:examAnswers,index:examIndex,type:examType,active:view==='exam-active'},history:examHistory};}
 let examHistory=[];
@@ -115,19 +119,21 @@ function restore(raw={}){
 }
 function status(text){$('syncStatus').textContent=text;}
 function message(text){const el=$('accountMessage');if(el)el.textContent=text;}
-function showAccount(mode='login',note=''){
- authMode=mode;app.hidden=true;account.hidden=false;
+function showAccount(mode='landing',note=''){
+ authMode=mode;app.hidden=true;account.hidden=mode==='landing';landing.hidden=mode!=='landing';studentPortal?.hide();
+ if(mode==='landing'){window.scrollTo(0,0);return;}
  const profile=mode==='profile', reset=mode==='reset',change=mode==='change',register=mode==='register';
- account.innerHTML=`<div class="brand">✦ STUDEO · BETA</div><h1>${profile?'Twoja przestrzeń nauki':reset?'Odzyskaj dostęp':change?'Ustaw nowe hasło':register?'Zacznij swoją naukę':'Dobrze Cię widzieć.'}</h1><p>${profile?'Twoje postępy są przypisane do Twojego konta.': 'Twoje studia w jednym miejscu: przedmioty, notatki, zadania i powtórki. Bezpłatne Premium w becie dla każdego, bez karty płatniczej.'}</p>
+ account.innerHTML=`${!profile?'<button class="ghost-btn" data-auth="landing">← O Studeo</button>':''}<div class="brand">✦ STUDEO · BETA</div><h1>${profile?'Twoja przestrzeń nauki':reset?'Odzyskaj dostęp':change?'Ustaw nowe hasło':register?'Zacznij swoją naukę':'Dobrze Cię widzieć.'}</h1><p>${profile?'Twoje postępy są przypisane do Twojego konta.': 'Twoje studia w jednym miejscu: przedmioty, notatki, zadania i powtórki. Bezpłatne Premium w becie dla każdego, bez karty płatniczej.'}</p>
  ${!configured?'<p class="message">Podgląd projektu. Logowanie będzie dostępne po podłączeniu bazy Supabase.</p><button class="primary-btn" id="previewCourse">Obejrzyj kurs</button>':`<form id="accountForm">
  ${profile?`<p>Zalogowana jako: <strong>${h(user?.email)}</strong></p>`:''}
  ${register||profile?`<label for="displayName">Jak mamy Cię nazywać?</label><input id="displayName" name="name" autocomplete="nickname" maxlength="60" value="${h(profile?user?.user_metadata?.display_name||'':'')}" />`:''}
  ${!profile&&!change?'<label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254" />':''}
  ${!profile&&!reset?`<label for="password">Hasło${register||change?' (minimum 12 znaków)':''}</label><input id="password" name="password" type="password" autocomplete="${register||change?'new-password':'current-password'}" required minlength="${register||change?12:1}" maxlength="128" />`:''}
  <button class="primary-btn" type="submit">${profile?'Zapisz imię':reset?'Wyślij link':change?'Zapisz nowe hasło':register?'Utwórz konto':'Zaloguj się'}</button></form>
- ${profile?'<button class="ghost-btn" id="backCourse">Wróć do nauki</button><button class="ghost-btn" id="logout">Wyloguj się</button><button class="ghost-btn" id="passwordReset">Zmień hasło przez e-mail</button><hr><h2>Przenieś stare postępy</h2><p>W starej aplikacji kliknij „Eksportuj postępy”, a tutaj wybierz pobrany plik JSON. Import zastąpi postępy na tym koncie po potwierdzeniu.</p><label for="importFile">Plik z postępami</label><input id="importFile" type="file" accept="application/json,.json"><button class="ghost-btn" id="downloadAccount">Pobierz kopię danych</button>':!change?`<button class="ghost-btn" data-auth="${register||reset?'login':'register'}">${register||reset?'Mam konto — zaloguj się':'Utwórz konto'}</button>${!reset?'<button class="ghost-btn" data-auth="reset">Nie pamiętam hasła</button>':''}`:'<button class="ghost-btn" id="logout">Wyloguj się</button>'}`}
+ ${profile?'<button class="ghost-btn" id="backCourse">Wróć do nauki</button><button class="ghost-btn" id="logout">Wyloguj się</button><button class="ghost-btn" id="passwordReset">Zmień hasło przez e-mail</button><hr><section id="accountUsage"></section><hr><h2>Przenieś stare postępy</h2><p>W starej aplikacji kliknij „Eksportuj postępy”, a tutaj wybierz pobrany plik JSON. Import zastąpi postępy na tym koncie po potwierdzeniu.</p><label for="importFile">Plik z postępami</label><input id="importFile" type="file" accept="application/json,.json"><button class="ghost-btn" id="downloadAccount">Pobierz kopię danych</button>':!change?`<button class="ghost-btn" data-auth="${register||reset?'login':'register'}">${register||reset?'Mam konto — zaloguj się':'Utwórz konto'}</button>${!reset?'<button class="ghost-btn" data-auth="reset">Nie pamiętam hasła</button>':''}`:'<button class="ghost-btn" id="logout">Wyloguj się</button>'}`}
  <p id="accountMessage" class="message" role="status">${h(note)}</p><small>Hasła obsługuje Supabase Auth. Aplikacja nie zapisuje haseł lokalnie.</small>`;
  account.querySelector('input')?.focus();
+ if(profile&&client){const owner=user?.id,gen=generation;mountAccountUsage(account.querySelector('#accountUsage'),client,()=>user?.id===owner&&generation===gen&&authMode==='profile');}
 }
 function banner(text){
  let b=$('syncBanner');if(!b){b=document.createElement('div');b.id='syncBanner';b.className='sync-banner';b.setAttribute('role','alert');document.body.append(b);}
@@ -161,7 +167,7 @@ async function authChange(event,session){
  clearAccount();user=session.user;
  if(recovering){showAccount('change');return;}
  showAccount('login','Wczytuję Twoje postępy…');
- try{await loadCloud();if(user&&ready){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal)await studentPortal.login(user);}}catch{showAccount('login','Nie udało się pobrać postępów. Sprawdź połączenie i konfigurację bazy, następnie odśwież stronę.');}
+ try{await loadCloud();if(user&&ready){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal)await studentPortal.login(user);if(new URLSearchParams(location.search).get('welcome')==='1')showAccount('landing');}}catch{showAccount('login','Nie udało się pobrać postępów. Sprawdź połączenie i konfigurację bazy, następnie odśwież stronę.');}
 }
 async function submitAccount(e){
  e.preventDefault();const form=e.target,button=form.querySelector('button');button.disabled=true;message('Chwileczkę…');
@@ -185,10 +191,10 @@ function downloadSnapshot(){const blob=new Blob([JSON.stringify({app:'Cyber od z
 document.addEventListener('submit',e=>{if(e.target.id==='accountForm')submitAccount(e);});
 document.addEventListener('click',async e=>{
  const t=e.target.closest('button');if(!t)return;
- if(t.dataset.auth){showAccount(t.dataset.auth);return;}
+ if(t.dataset.auth){if(['login','register'].includes(t.dataset.auth)&&user&&ready){landing.hidden=true;account.hidden=true;app.hidden=!!studentPortal;studentPortal?.show();history.replaceState({},'',location.pathname);return;}if(t.dataset.auth!=='landing')history.replaceState({},'',location.pathname);showAccount(t.dataset.auth);window.scrollTo(0,0);return;}
  if(t.id==='previewCourse'){account.hidden=true;app.hidden=false;render();status('Podgląd — postępy nie są zapisywane');return;}
  if(t.id==='profileButton'){showAccount(configured?'profile':'login');return;}
- if(t.id==='backCourse'){account.hidden=true;app.hidden=!!studentPortal;studentPortal?.show();return;}
+ if(t.id==='backCourse'){account.hidden=true;app.hidden=!!studentPortal;if(studentPortal&&user)await studentPortal.login(user);return;}
  if(t.id==='studentHome'){await cloudSave();if(dirty)return;app.hidden=true;studentPortal?.show();return;}
  if(t.id==='logout'){
   await cloudSave();if(dirty&&!confirm('Masz niezapisane zmiany. Wylogować się i je odrzucić?'))return;
