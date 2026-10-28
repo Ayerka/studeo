@@ -2,7 +2,7 @@
 
 Kod aplikacji Studeo: kurs Od zera do hakera, prywatne przedmioty i materiały, kursy generowane z materiałów, fiszki, testy, notatki, kalendarz, zadania i pomoc AI. Bezpłatna beta udostępnia Premium wszystkim kontom.
 
-Strona: https://cyber-od-zera-michelle.ejm-chatgpt.chatgpt.site/
+Strona: https://studeo.ayerka13.workers.dev
 
 ## Co jest w repozytorium
 
