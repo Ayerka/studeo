@@ -4,9 +4,9 @@ import {applyOcrPage,ocrCandidates} from '../src/ocr-model.js';
 const id='00000000-0000-0000-0000-000000000001';
 const material={id,user_id:'A',revision:3,kind:'material',payload:{path:'A/scan.pdf',fileName:'scan.pdf',pages:[{page:1,text:''},{page:2,text:'Dobry tekst '.repeat(20)}]}};
 const request=(body={materialId:id,page:1,image:'data:image/jpeg;base64,/9j/AAAA'})=>new Request('https://app.test/api/ocr',{method:'POST',headers:{Authorization:'Bearer fake'},body:JSON.stringify(body)});
-function mock({owner='A',quota=true,completed=true}={}){let aiCalls=0;return {get aiCalls(){return aiCalls},fetch:async(url,opts)=>{
+function mock({owner='A',quota=true,completed=true,pages=material.payload.pages}={}){let aiCalls=0;return {get aiCalls(){return aiCalls},fetch:async(url,opts)=>{
  if(url.endsWith('/user'))return Response.json({id:'A'});
- if(url.includes('student_entries?'))return Response.json([{...material,user_id:owner}]);
+ if(url.includes('student_entries?'))return Response.json([{...material,user_id:owner,payload:{...material.payload,pages}}]);
  if(url.includes('student_claim_ai'))return Response.json({}, {status:quota?200:429});
  if(url.includes('api.openai.com')){aiCalls++;const body=JSON.parse(opts.body);assert.equal(body.store,false);assert.equal(body.input[0].content[1].type,'input_image');return Response.json({status:completed?'completed':'incomplete',output:[{content:[{type:'output_text',text:JSON.stringify({text:'Odczytany tekst źródłowy.',uncertain:false})}]}]});}throw Error('Unexpected request');
  }};}
@@ -30,4 +30,11 @@ test('proxy allows OCR image payload without raising normal AI endpoint limits',
  let called=0;const req=()=>request({materialId:id,page:1,image:'x'.repeat(20000)}),fetch=async()=>{called++;return Response.json({ok:true});};
  assert.equal((await proxyAI(req(),'ocr',fetch)).status,200);assert.equal(called,1);
  assert.equal((await proxyAI(req(),'study',fetch)).status,413);assert.equal(called,1);
+});
+
+test('OCR accepts a selected original page above 100 but rejects excluded pages',async()=>{
+ const m=mock({pages:[{page:150,text:''}]});
+ assert.equal((await handleOcr(request({materialId:id,page:150,image:'data:image/jpeg;base64,/9j/AAAA'}),{OPENAI_API_KEY:'fake'},m.fetch)).status,200);
+ assert.equal((await handleOcr(request({materialId:id,page:149,image:'data:image/jpeg;base64,/9j/AAAA'}),{OPENAI_API_KEY:'fake'},m.fetch)).status,400);
+ assert.equal(m.aiCalls,1);
 });
