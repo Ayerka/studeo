@@ -1,19 +1,13 @@
 {
-  "name": "cyber-od-zera",
-  "version": "2.0.0",
+  "name": "studeo",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "vite build --outDir dist/client && node scripts/build-worker.mjs",
-    "preview": "vite preview --host 127.0.0.1",
-    "test": "node --import tsx --test tests/*.test.js"
-  },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
-    "pdfjs-dist": "^6.4.299",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "pdfjs-dist": "^6.4.299"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.0",
@@ -23,5 +17,13 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^7.0.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "start": "vite --host 0.0.0.0",
+    "build": "vite build --outDir dist/client && node scripts/build-worker.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "preview:production": "vite build --outDir dist/preview && vite preview --host 127.0.0.1 --outDir dist/preview",
+    "test": "node --import tsx --test tests/*.test.js"
   }
 }
