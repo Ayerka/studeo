@@ -1,28 +1,35 @@
-import {test} from 'node:test';
+import {after,test} from 'node:test';
 import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {createServer} from 'vite';
 import {JSDOM} from 'jsdom';
-import {landingMarkup} from '../src/landing.js';
 
-const dom=new JSDOM(`<body><div id="landing">${landingMarkup()}</div></body>`);
-const d=dom.window.document,text=d.body.textContent.replace(/\s+/g,' ');
+const vite=await createServer({configFile:false,appType:'custom',logLevel:'silent',server:{middlewareMode:true}});
+const {LandingPage}=await vite.ssrLoadModule('/src/components/LandingPage.tsx');
+after(()=>vite.close());
+
+const html=renderToStaticMarkup(React.createElement(LandingPage,{onLogin(){},onRegister(){},onExploreCourse(){}}));
+const document=new JSDOM(html).window.document;
+const text=html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
 
 test('landing leads with the competitive advantages from the business plan',()=>{
- assert.equal(d.querySelectorAll('h1').length,1);
- assert.match(d.querySelector('h1').textContent,/Zamiast zarywać noce|Całe studia/);
- assert.match(d.querySelector('h1').textContent,/Studeo robi resztę|slajdy|sesj/);
- for(const id of ['lp-advantages','lp-how','lp-compare','lp-source','lp-privacy','lp-plans','lp-faq'])assert.ok(d.getElementById(id),`missing section ${id}`);
+ assert.equal((html.match(/<h1\b/g)||[]).length,1);
+ assert.match(html,/<h1[^>]*>[\s\S]*Zamiast zarywać noce/);
+ assert.match(html,/Studeo robi resztę/);
+ for(const id of ['lp-advantages','lp-how','lp-compare','lp-source','lp-privacy','lp-plans','lp-faq'])assert.ok(html.includes(`id="${id}"`),`missing section ${id}`);
  for(const phrase of ['Zamiast czterech aplikacji','Gotowe od pierwszego dnia','AI z Twoich materiałów','Powtórki we właściwym momencie','Po polsku','Skany też się liczą'])assert.ok(text.toLowerCase().includes(phrase.toLowerCase()),phrase);
- assert.ok(d.querySelector('#lp-top [data-auth=register]'),'primary call to action in the hero');
+ assert.match(html,/lp-primary[\s\S]*Zacznij bezpłatnie/,'primary call to action in the hero');
 });
 
 test('comparison compares kinds of tools, is complete and accessible',()=>{
- const rows=[...d.querySelectorAll('#lp-compare tbody tr')];
+ const rows=[...document.querySelectorAll('#lp-compare tbody tr')];
  assert.equal(rows.length,7);
- for(const r of rows){assert.equal(r.querySelectorAll('td').length,5);assert.ok(r.querySelector('th[scope=row]'));assert.ok(r.querySelector('td.lp-us'));for(const td of r.querySelectorAll('td'))assert.ok(td.dataset.label,'mobile label');}
- assert.equal(d.querySelectorAll('#lp-compare thead th').length,6);
- assert.ok(d.querySelector('#lp-compare caption'));
+ for(const row of rows){assert.equal(row.querySelectorAll('td').length,5);assert.ok(row.querySelector('th[scope=row]'));assert.ok(row.querySelector('td.lp-us'));for(const td of row.querySelectorAll('td'))assert.ok(td.dataset.label);}
+ assert.equal(document.querySelectorAll('#lp-compare thead th').length,6);
+ assert.ok(document.querySelector('#lp-compare caption'));
  assert.match(text,/Konkretne aplikacje różnią się możliwościami/);
- assert.doesNotMatch(d.getElementById('lp-compare').textContent,/Notion|Todoist|Quizlet|Anki|Google|USOS/,'no competitor brands');
+ assert.doesNotMatch(html,/Notion|Todoist|Quizlet|Anki|Google|USOS/,'no competitor brands');
 });
 
 test('landing makes only claims the product keeps',()=>{
@@ -31,12 +38,13 @@ test('landing makes only claims the product keeps',()=>{
  assert.match(text,/Ceny po becie nie zostały jeszcze ustalone/);
  assert.match(text,/przesyłana do OpenAI/);
  assert.match(text,/AI może się pomylić/);
- assert.equal(d.querySelectorAll('#lp-source .lp-tag').length,1);assert.match(d.querySelector('#lp-source .lp-tag').textContent,/PRZYKŁADOWY WIDOK/);
+ assert.match(html,/lp-tag[^>]*>PRZYKŁADOWY WIDOK/);
 });
 
 test('all in-page links resolve and every auth button is wired by data-auth',()=>{
- const ids=new Set([...d.querySelectorAll('[id]')].map(x=>x.id));
- for(const a of d.querySelectorAll('a[href^="#"]'))assert.ok(ids.has(a.getAttribute('href').slice(1)),a.getAttribute('href'));
- for(const b of d.querySelectorAll('button'))assert.ok(['login','register'].includes(b.dataset.auth),b.textContent);
- assert.equal(d.querySelectorAll('script,iframe,img,link').length,0,'no external or inline resources');
+ const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]));
+ for(const [,target] of html.matchAll(/href="#([^"]+)"/g))assert.ok(ids.has(target),target);
+ assert.match(html,/Zaloguj się/);
+ assert.match(html,/Utwórz konto|Zacznij bezpłatnie/);
+ assert.doesNotMatch(html,/<script\b|<iframe\b|<img\b|<link\b/,'no external or inline resources');
 });

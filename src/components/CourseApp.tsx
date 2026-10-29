@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { ProgressState, ExamAnswer, QuizQuestion } from '../types';
 import { LESSONS, GLOSSARY, LECTURE_MULTI, SECURITY_PLUS, pickSecurityQuestions } from '../data/courseData';
+import { restoreCourseSession, serializeCourseSession, type CourseSessionState } from '../course-session';
+import { CourseHeader } from './CourseHeader';
+import { CourseSidebar, type CourseView } from './CourseSidebar';
+import { LessonCard } from './LessonCard';
 import '../course.css';
 
 interface CourseAppProps {
@@ -11,6 +15,8 @@ interface CourseAppProps {
   syncStatus: string;
   onExportProgress: () => void;
   showToast: (msg: string) => void;
+  initialSnapshot: Record<string, any>;
+  onStateChange: (snapshot: CourseSessionState) => void;
 }
 
 export const CourseApp: React.FC<CourseAppProps> = ({
@@ -21,8 +27,11 @@ export const CourseApp: React.FC<CourseAppProps> = ({
   syncStatus,
   onExportProgress,
   showToast,
+  initialSnapshot,
+  onStateChange,
 }) => {
-  const [view, setView] = useState<'home' | 'lessons' | 'lesson' | 'flash' | 'glossary' | 'exam' | 'exam-active' | 'exam-done' | 'search'>('home');
+  const [restoredSession] = useState(() => restoreCourseSession(initialSnapshot, progress));
+  const [view, setView] = useState<CourseView>(restoredSession.examActive ? 'exam-active' : 'home');
   const [lessonId, setLessonId] = useState<string | null>(null);
   const [trackFilter, setTrackFilter] = useState<number>(0);
   const [query, setQuery] = useState('');
@@ -31,19 +40,39 @@ export const CourseApp: React.FC<CourseAppProps> = ({
   const [hashInput, setHashInput] = useState('Przelej 100 zł');
 
   // Flashcards state
-  const [flashIndex, setFlashIndex] = useState(0);
+  const [flashIndex, setFlashIndex] = useState(restoredSession.flashIndex);
   const [flashReveal, setFlashReveal] = useState(false);
 
   // Lesson quiz state
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
-  const [quizShown, setQuizShown] = useState<Record<string, boolean>>({});
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>(restoredSession.quiz.answers);
+  const [quizShown, setQuizShown] = useState<Record<string, boolean>>(restoredSession.quiz.shown);
 
   // Exam state
-  const [examType, setExamType] = useState('all');
-  const [examQs, setExamQs] = useState<QuizQuestion[]>([]);
-  const [examIndex, setExamIndex] = useState(0);
-  const [examAnswers, setExamAnswers] = useState<ExamAnswer[]>([]);
+  const [examType, setExamType] = useState(restoredSession.examType);
+  const [examQs, setExamQs] = useState<QuizQuestion[]>(restoredSession.examQuestions);
+  const [examIndex, setExamIndex] = useState(restoredSession.examIndex);
+  const [examAnswers, setExamAnswers] = useState<ExamAnswer[]>(restoredSession.examAnswers);
+  const [examHistory, setExamHistory] = useState<any[]>(restoredSession.history);
   const [latestScore, setLatestScore] = useState<{ correct: number; total: number; pct: number } | null>(null);
+  const onStateChangeRef = useRef(onStateChange);
+  onStateChangeRef.current = onStateChange;
+
+  useEffect(() => {
+    onStateChangeRef.current(
+      serializeCourseSession(
+        progress,
+        quizAnswers,
+        quizShown,
+        flashIndex,
+        examType,
+        examQs,
+        examAnswers,
+        examIndex,
+        view === 'exam-active',
+        examHistory
+      )
+    );
+  }, [progress, quizAnswers, quizShown, flashIndex, examType, examQs, examAnswers, examIndex, view, examHistory]);
 
   // Speech synthesis state
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -62,7 +91,7 @@ export const CourseApp: React.FC<CourseAppProps> = ({
     return x.toString(16).padStart(8, '0').toUpperCase() + ' (odcisk demonstracyjny, NIE SHA-256)';
   };
 
-  const gotoPage = (newPage: typeof view, newLessonId: string | null = null) => {
+  const gotoPage = (newPage: CourseView, newLessonId: string | null = null) => {
     setView(newPage);
     if (newLessonId) setLessonId(newLessonId);
     setQuery('');
@@ -143,17 +172,16 @@ export const CourseApp: React.FC<CourseAppProps> = ({
       const count = Number(selectedExamType.slice(3));
       pool = pickSecurityQuestions(count);
     } else {
-      const lecturePool: QuizQuestion[] = LESSONS.filter(
-        (l) => selectedExamType === 'all' || String(l.track) === selectedExamType
-      )
-        .flatMap((l) =>
+      const lecturePool: QuizQuestion[] = [
+        ...LESSONS.filter(
+          (l) => selectedExamType === 'all' || String(l.track) === selectedExamType
+        ).flatMap((l) =>
           l.quiz.map((q) => ({ ...q, lesson: l.id, lessonTitle: l.title }))
-        )
-        .concat(
-          LECTURE_MULTI.filter(
-            (q) => selectedExamType === 'all' || String(q.track) === selectedExamType
-          )
-        );
+        ),
+        ...LECTURE_MULTI.filter(
+          (q) => selectedExamType === 'all' || String(q.track) === selectedExamType
+        ),
+      ];
 
       const shuffled = [...lecturePool];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -235,6 +263,22 @@ export const CourseApp: React.FC<CourseAppProps> = ({
         examBest: newBest,
       });
       setLatestScore({ correct, total: examQs.length, pct });
+      const examSnapshot = serializeCourseSession(
+        progress,
+        quizAnswers,
+        quizShown,
+        flashIndex,
+        examType,
+        examQs,
+        examAnswers,
+        examIndex,
+        false,
+        examHistory
+      ).exam;
+      setExamHistory((history) => [
+        ...history,
+        { at: new Date().toISOString(), score: { correct, total: examQs.length, pct }, ...examSnapshot },
+      ].slice(-100));
       setView('exam-done');
       window.scrollTo(0, 0);
     } else {
@@ -479,187 +523,36 @@ export const CourseApp: React.FC<CourseAppProps> = ({
     );
   };
 
-  // Lesson Card helper
-  const renderLessonCard = (l: typeof LESSONS[0]) => {
-    const isDone = progress.done.includes(l.id);
-    return (
-      <button
-        key={l.id}
-        type="button"
-        className="lesson-card"
-        onClick={() => gotoPage('lesson', l.id)}
-      >
-        <div className="tag-row">
-          <span className="lesson-icon">{l.icon}</span>
-          <span className={`tag ${isDone ? 'green' : 'grey'}`}>
-            {isDone ? '✓ Ukończona' : 'Do nauki'}
-          </span>
-        </div>
-        <h3>{l.title}</h3>
-        <p>{l.subtitle}</p>
-        <div className="tag-row">
-          <span className="tag">WYKŁAD {l.track}</span>
-          <span className="mini muted">Otwórz →</span>
-        </div>
-      </button>
-    );
-  };
-
   return (
     <div className="app" id="courseApp">
-      <div
-        className={`overlay ${sidebarOpen ? 'show' : ''}`}
-        id="overlay"
-        onClick={() => setSidebarOpen(false)}
+      <CourseSidebar
+        open={sidebarOpen}
+        view={view}
+        lessonId={lessonId}
+        doneLessonIds={progress.done}
+        syncStatus={syncStatus}
+        onClose={() => setSidebarOpen(false)}
+        onNavigate={gotoPage}
+        onOpenStudentPortal={onOpenStudentPortal}
+        onOpenProfile={onOpenProfile}
+        onExportProgress={onExportProgress}
       />
 
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`} id="sidebar">
-        <div className="logo">
-          <div className="logo-mark">✦</div>
-          <div>
-            <strong>Od zera do hakera</strong>
-            <small>Twoja strefa nauki</small>
-          </div>
-        </div>
-
-        <button className="menu-btn" onClick={onOpenStudentPortal} type="button">
-          ← Moje przedmioty
-        </button>
-        <button className="menu-btn" onClick={onOpenProfile} type="button">
-          👤 Mój profil
-        </button>
-
-        <div className="nav-title">Przestrzeń nauki</div>
-        <button
-          className={`menu-btn ${view === 'home' ? 'active' : ''}`}
-          onClick={() => gotoPage('home')}
-          type="button"
-        >
-          <span className="menu-icon">⌂</span> Pulpit
-        </button>
-        <button
-          className={`menu-btn ${view === 'lessons' || view === 'lesson' ? 'active' : ''}`}
-          onClick={() => gotoPage('lessons')}
-          type="button"
-        >
-          <span className="menu-icon">📚</span> Lekcje{' '}
-          <span className="count">{TOTAL}</span>
-        </button>
-        <button
-          className={`menu-btn ${view === 'flash' ? 'active' : ''}`}
-          onClick={() => gotoPage('flash')}
-          type="button"
-        >
-          <span className="menu-icon">🃏</span> Fiszki
-        </button>
-        <button
-          className={`menu-btn ${view === 'exam' || view === 'exam-active' || view === 'exam-done' ? 'active' : ''}`}
-          onClick={() => gotoPage('exam')}
-          type="button"
-        >
-          <span className="menu-icon">📝</span> Testy
-        </button>
-        <button
-          className={`menu-btn ${view === 'glossary' ? 'active' : ''}`}
-          onClick={() => gotoPage('glossary')}
-          type="button"
-        >
-          <span className="menu-icon">📖</span> Słownik
-        </button>
-
-        {[1, 2, 3, 4].map((track) => (
-          <React.Fragment key={track}>
-            <div className="nav-title">
-              {track === 1
-                ? 'Wykład 1 · Podstawy'
-                : track === 2
-                ? 'Wykład 2 · Kryptografia'
-                : track === 3
-                ? 'Wykład 3 · Aktorzy zagrożeń'
-                : 'Wykład 4 · Malware i ataki'}
-            </div>
-            <div>
-              {LESSONS.filter((l) => l.track === track).map((l) => {
-                const isCurrent = lessonId === l.id && view === 'lesson';
-                const isDone = progress.done.includes(l.id);
-                return (
-                  <button
-                    key={l.id}
-                    className={`lesson-nav ${isCurrent ? 'active' : ''} ${isDone ? 'done' : ''}`}
-                    onClick={() => gotoPage('lesson', l.id)}
-                    type="button"
-                  >
-                    <span className="mini-ico">{l.icon}</span>
-                    <span>{l.title}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </React.Fragment>
-        ))}
-
-        <div className="sidebar-footer">
-          <span id="syncStatus" role="status">
-            {syncStatus}
-          </span>
-          <br />
-          <button id="exportProgress" onClick={onExportProgress} type="button">
-            ↓ Eksportuj postępy
-          </button>
-        </div>
-      </aside>
-
       <main className="main">
-        <header className="topbar">
-          <button
-            className="circle-btn mobile-menu"
-            id="openSidebar"
-            aria-label="Otwórz menu"
-            onClick={() => setSidebarOpen(true)}
-            type="button"
-          >
-            ☰
-          </button>
-          <div className="topsearch">
-            <span>⌕</span>
-            <input
-              id="globalSearch"
-              placeholder="Szukaj: klucz prywatny, hash, MFA..."
-              aria-label="Szukaj tematów i pojęć"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                if (e.target.value.trim()) {
-                  setView('search');
-                } else if (view === 'search') {
-                  setView('home');
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setQuery('');
-                  if (view === 'search') setView('home');
-                }
-              }}
-            />
-          </div>
-          <div className="topright">
-            <span className="status-chip" id="topStatus">
-              {percentDone === 100
-                ? 'Cały materiał ukończony! 🏆'
-                : `${percentDone}% materiału za Tobą`}
-            </span>
-            <button
-              className="circle-btn"
-              id="goHome"
-              title="Pulpit"
-              onClick={() => gotoPage('home')}
-              type="button"
-            >
-              ✦
-            </button>
-          </div>
-        </header>
+        <CourseHeader
+          query={query}
+          percentDone={percentDone}
+          onQueryChange={(nextQuery) => {
+            setQuery(nextQuery);
+            if (nextQuery.trim()) {
+              setView('search');
+            } else if (view === 'search') {
+              setView('home');
+            }
+          }}
+          onOpenSidebar={() => setSidebarOpen(true)}
+          onNavigate={gotoPage}
+        />
 
         <div id="content" className="content">
           {/* SEARCH VIEW */}
@@ -692,7 +585,16 @@ export const CourseApp: React.FC<CourseAppProps> = ({
                       <h2>Lekcje ({matchedLessons.length})</h2>
                     </div>
                     {matchedLessons.length > 0 ? (
-                      <div className="lesson-grid">{matchedLessons.map(renderLessonCard)}</div>
+                      <div className="lesson-grid">
+                        {matchedLessons.map((lesson) => (
+                          <LessonCard
+                            key={lesson.id}
+                            lesson={lesson}
+                            completed={progress.done.includes(lesson.id)}
+                            onOpen={(id) => gotoPage('lesson', id)}
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <div className="empty">Nie znaleziono lekcji.</div>
                     )}
@@ -871,7 +773,14 @@ export const CourseApp: React.FC<CourseAppProps> = ({
                     next,
                     ...LESSONS.filter((l) => l.id !== next.id && !progress.done.includes(l.id)).slice(0, 2),
                   ];
-                  return previewList.map(renderLessonCard);
+                  return previewList.map((lesson) => (
+                    <LessonCard
+                      key={lesson.id}
+                      lesson={lesson}
+                      completed={progress.done.includes(lesson.id)}
+                      onOpen={(id) => gotoPage('lesson', id)}
+                    />
+                  ));
                 })()}
               </div>
 
@@ -947,7 +856,14 @@ export const CourseApp: React.FC<CourseAppProps> = ({
               </div>
 
               <div className="lesson-grid">
-                {LESSONS.filter((l) => !trackFilter || l.track === trackFilter).map(renderLessonCard)}
+                {LESSONS.filter((lesson) => !trackFilter || lesson.track === trackFilter).map((lesson) => (
+                  <LessonCard
+                    key={lesson.id}
+                    lesson={lesson}
+                    completed={progress.done.includes(lesson.id)}
+                    onOpen={(id) => gotoPage('lesson', id)}
+                  />
+                ))}
               </div>
             </div>
           )}

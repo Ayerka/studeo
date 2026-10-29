@@ -13,7 +13,7 @@ interface AccountModalProps {
   onOpenLanding: () => void;
   onAuthSuccess: (user: User) => void;
   onLogout: () => void;
-  onImportProgress: (data: any) => void;
+  onImportProgress: (data: any) => Promise<void> | void;
   onExportProgress: () => void;
 }
 
@@ -167,20 +167,23 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     }
   };
 
-  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        onImportProgress(json);
-        setMessage('Postępy zaimportowane!');
-      } catch {
-        setMessage('Nieprawidłowy plik JSON.');
+    setMessage('Przywracam dane…');
+    try {
+      if (file.size > 524288) throw new Error('Plik jest za duży (maksymalnie 512 KB).');
+      const json = JSON.parse(await file.text());
+      if (!['Studeo', 'Cyber od zera'].includes(json?.app)) {
+        throw new Error('To nie jest kopia zapasowa Studeo.');
       }
-    };
-    reader.readAsText(file);
+      await onImportProgress(json);
+      setMessage('Dane zostały przywrócone.');
+    } catch (error: any) {
+      setMessage(error?.message || 'Nie udało się przywrócić danych.');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const isProfile = currentMode === 'profile';

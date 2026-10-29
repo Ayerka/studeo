@@ -5,6 +5,7 @@ export interface QuizQuestion {
   answers?: number[];
   why: string;
   id?: string;
+  track?: number;
   lesson?: string;
   lessonTitle?: string;
   moduleId?: string;

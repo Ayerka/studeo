@@ -5,6 +5,7 @@ import './course.css';
 import './student.css';
 import './landing.css';
 import './account.css';
+import './app.css';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {

@@ -15,26 +15,7 @@
 
 </head>
 <body>
-<div class="overlay" id="overlay"></div>
-<div class="app" id="courseApp" hidden>
-  <aside class="sidebar" id="sidebar">
-    <div class="logo"><div class="logo-mark">✦</div><div><strong>Od zera do hakera</strong><small>Twoja strefa nauki</small></div></div>
-    <button class="menu-btn" id="studentHome">← Moje przedmioty</button><button class="menu-btn" id="profileButton">👤 Mój profil</button><div class="nav-title">Przestrzeń nauki</div>
-    <button class="menu-btn" data-page="home"><span class="menu-icon">⌂</span> Pulpit</button>
-    <button class="menu-btn" data-page="lessons"><span class="menu-icon">📚</span> Lekcje <span class="count" id="lessonCount">18</span></button>
-    <button class="menu-btn" data-page="flash"><span class="menu-icon">🃏</span> Fiszki</button>
-    <button class="menu-btn" data-page="exam"><span class="menu-icon">📝</span> Testy</button>
-    <button class="menu-btn" data-page="glossary"><span class="menu-icon">📖</span> Słownik</button>
-    <div class="nav-title">Wykład 1 · Podstawy</div><div id="navTrack1"></div>
-    <div class="nav-title">Wykład 2 · Kryptografia</div><div id="navTrack2"></div><div class="nav-title">Wykład 3 · Aktorzy zagrożeń</div><div id="navTrack3"></div><div class="nav-title">Wykład 4 · Malware i ataki</div><div id="navTrack4"></div>
-    <div class="sidebar-footer"><span id="syncStatus" role="status">Łączenie z kontem…</span><br><button id="exportProgress">↓ Eksportuj postępy</button></div>
-  </aside>
-  <main class="main">
-    <header class="topbar"><button class="circle-btn mobile-menu" id="openSidebar" aria-label="Otwórz menu">☰</button><div class="topsearch"><span>⌕</span><input id="globalSearch" placeholder="Szukaj: klucz prywatny, hash, MFA..." aria-label="Szukaj tematów i pojęć" /></div><div class="topright"><span class="status-chip" id="topStatus">Zaczynamy od podstaw ✨</span><button class="circle-btn" id="goHome" title="Pulpit">✦</button></div></header>
-    <div id="content" class="content"></div>
-  </main>
-</div>
-<section id="account" class="account"></section><div id="toast" class="toast" role="status"></div>
-<script type="module" src="/src/main.js"></script>
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

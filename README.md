@@ -8,11 +8,11 @@ Strona: https://studeo.ayerka13.workers.dev
 
 Repozytorium zawiera kopię kodu źródłowego i migracje bazy. Konta, postępy, prywatne materiały i sekrety pozostają w Supabase — nie są częścią tej kopii. Cloudflare GitHub Builds automatycznie publikuje gałąź main po udanym budowaniu. GitHub Actions osobno sprawdza testy i build.
 
-## Kod produkcyjny i prototyp React
+## Frontend React
 
-Produkcja korzysta z modułów JavaScript składanych przez `scripts/assemble.mjs` do `src/main.js`. Zawiera izolację kont, synchronizację, generowanie kursów przez AI, OCR i zarządzanie plikami. Edytuj moduły źródłowe, nie wygenerowany plik.
+Produkcyjny interfejs uruchamia `src/main.tsx`. Widoki, nawigacja i stan kursu są komponentami React. Panel studenta jest obecnie osadzony przez adapter React, który zachowuje istniejące przepływy AI, plików, OCR i PDF; szczegóły dalszej migracji są w [dokumentacji](docs/REACT-MIGRATION.md).
 
-Komponenty React/TypeScript pozostają jako niedokończony prototyp i nie są uruchamiane na produkcji. [Stan migracji i brakujące zabezpieczenia](docs/REACT-MIGRATION.md).
+Niektóre moduły `.js` pozostają celowo jako logika domenowa używana przez React: magazyn konta, kursy prywatne, OCR/PDF, modele i statystyki. Stary DOM runtime oraz jego generator zostały usunięte.
 
 ## Uruchomienie
 

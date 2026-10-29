@@ -7,18 +7,21 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build --outDir dist/client && node scripts/build-worker.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/*.test.js",
-    "predev": "node scripts/assemble.mjs",
-    "prebuild": "node scripts/assemble.mjs",
-    "pretest": "node scripts/assemble.mjs"
+    "test": "node --import tsx --test tests/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
-    "pdfjs-dist": "^6.4.299"
+    "pdfjs-dist": "^6.4.299",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "jsdom": "^26.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
     "vite": "^7.0.0"
   }
 }
