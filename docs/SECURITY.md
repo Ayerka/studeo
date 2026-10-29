@@ -7,7 +7,7 @@ Zakres: baza i Storage w Supabase (projekt kioqgerkpbgntlbavtro), funkcja studen
 - RLS włączone (z FORCE) na tabelach użytkowników; polityki ograniczają dane do właściciela. Klucz publiczny (publishable) jest przeznaczony do przeglądarki.
 - Bucket `student-private` jest prywatny, z limitem 20 MB i listą typów plików (bez HTML i SVG). Ścieżka pliku musi zaczynać się od identyfikatora użytkownika.
 - Plan konta nie może być zmieniony z przeglądarki (brak zapisu do `plans` i `account_plans`).
-- Treści użytkownika są escapowane w interfejsie (testy XSS w `tests/student-ui.test.js`).
+- Treści użytkownika renderują się jako tekst React; testy portalu React sprawdzają prywatność danych i zachowanie formularzy.
 - `npm audit --omit=dev`: 0 podatności. W repozytorium nie znaleziono sekretów (klucz OpenAI i service_role są poza repo).
 
 ## Naprawione w tym PR

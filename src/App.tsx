@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabase, isConfigured } from './lib/supabase';
 import { LandingPage } from './components/LandingPage';
 import { CourseApp } from './components/CourseApp';
-import { ProductionStudentPortal } from './components/ProductionStudentPortal';
+import { StudentPortal } from './components/StudentPortal';
 import { AccountModal } from './components/AccountModal';
 import { Toast } from './components/Toast';
 import { normalizeProgress } from './state';
@@ -458,9 +458,10 @@ export const App: React.FC = () => {
       )}
 
       {currentApp === 'student' && supabase && user && (
-        <ProductionStudentPortal
+        <StudentPortal
           client={supabase}
           user={user}
+          builtinProgress={progress}
           onOpenCourse={() => setCurrentApp('course')}
           onOpenProfile={() => setAccountMode('profile')}
           onLogout={async () => {
@@ -470,7 +471,7 @@ export const App: React.FC = () => {
             setCurrentApp('landing');
             showToast('Wylogowano.');
           }}
-          exportCourse={() => progress}
+          onEntriesChange={setEntries}
         />
       )}
 

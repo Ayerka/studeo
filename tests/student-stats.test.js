@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {studentStats,recordStudyDay,renderStudentStats,studyDate} from '../src/student-stats.js';
+import {studentStats,recordStudyDay,studyDate} from '../src/student-stats.js';
 const now=new Date('2026-10-28T12:00:00Z'),subjects=[{id:'s',user_id:'A'},{id:'other',user_id:'B'},{id:'archived',user_id:'A',archived:true}];
 const deck={id:'deck',user_id:'A',subject_id:'s',kind:'deck',payload:{cards:[{id:'c',known:true,review:{count:4,lastAt:'2026-10-27T12:00:00Z'}}],studyDays:['2026-10-26','2026-10-27']}};
 test('statistics isolate owners and archived subjects, keep zero bars empty',()=>{
@@ -7,7 +7,6 @@ test('statistics isolate owners and archived subjects, keep zero bars empty',()=
  const a=studentStats(subjects,rows,'A',{progress:{done:['w1-start','w1-start']}},now);
  assert.equal(a.reviews,4);assert.equal(a.doneLessons,1);assert.equal(a.doneTasks,1);assert.equal(a.repeated,1);assert.equal(a.streak,2);assert.equal(a.week.filter(x=>x.active).length,2);
  const b=studentStats(subjects,rows,'B',{},now);assert.equal(b.reviews,0);assert.equal(b.streak,0);
- assert.match(renderStudentStats([],[],'A',{},now),/<progress value="0"/);
 });
 test('a day is recorded once on real learning, not generation or metadata edits',()=>{
  assert.equal(recordStudyDay(undefined,deck,now),deck);

@@ -10,7 +10,7 @@ Repozytorium zawiera kopię kodu źródłowego i migracje bazy. Konta, postępy,
 
 ## Frontend React
 
-Produkcyjny interfejs uruchamia `src/main.tsx`. Widoki, nawigacja i stan kursu są komponentami React. Panel studenta jest obecnie osadzony przez adapter React, który zachowuje istniejące przepływy AI, plików, OCR i PDF; szczegóły dalszej migracji są w [dokumentacji](docs/REACT-MIGRATION.md).
+Produkcyjny interfejs uruchamia `src/main.tsx`. Landing, konto, kurs oraz cały panel studenta są komponentami React. Logika domenowa OCR/PDF, prywatnych kursów i modeli pozostaje w modułach pomocniczych; stary imperative UI został usunięty. Szczegóły architektury są w [dokumentacji migracji](docs/REACT-MIGRATION.md).
 
 Niektóre moduły `.js` pozostają celowo jako logika domenowa używana przez React: magazyn konta, kursy prywatne, OCR/PDF, modele i statystyki. Stary DOM runtime oraz jego generator zostały usunięte.
 

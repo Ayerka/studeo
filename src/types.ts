@@ -124,11 +124,17 @@ export interface StudentEntryPayload {
   building?: string;
   pages?: MaterialPage[];
   fileName?: string;
+  pdfPageRange?: string;
   path?: string;
   fileRemoved?: boolean;
   cards?: FlashCard[];
   sections?: { title?: string; page?: number; text: string; quote?: string }[];
   questions?: QuizQuestion[];
+  testAnswers?: Record<string, { selected?: number[]; correct: boolean; at: string }>;
+  practice?: Record<string, { correct: boolean; at: string }>;
+  testHistory?: { at: string; testAnswers?: Record<string, unknown>; practice?: Record<string, unknown> }[];
+  requestedCount?: number;
+  studyDays?: string[];
   method?: string;
   sourceId?: string;
   courseSnapshot?: CourseSnapshotMeta;
@@ -138,7 +144,7 @@ export interface StudentEntryPayload {
   ai?: boolean;
   taskId?: string;
   question?: string;
-  lessonDone?: Record<number, boolean>;
+  lessonDone?: Record<number, boolean | { at?: string }>;
 }
 
 export interface StudentEntry {
