@@ -20,7 +20,7 @@ test('invalid citation returns retryable 422 and never saves a deck',async()=>{
   if(url.includes('api.openai.com'))return Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(deck('Ten cytat nie występuje w materiale.'))}]}]});
   saved=true;throw Error('Unexpected save');
  };
- const res=await handleStudy(new Request('https://example.test/api/study',{method:'POST',headers:{Authorization:'Bearer fake'},body:JSON.stringify({materialId:'00000000-0000-0000-0000-000000000001'})}),{OPENAI_API_KEY:'fake'},mock);
+ const res=await handleStudy(new Request('https://example.test/api/study',{method:'POST',headers:{Authorization:'Bearer fake'},body:JSON.stringify({materialId:'00000000-0000-0000-0000-000000000001'})}),{OPENAI_API_KEY:'fake',SUPABASE_URL:'https://test.supabase.co',SUPABASE_PUBLISHABLE_KEY:'test'},mock);
  assert.equal(res.status,422);assert.equal((await res.json()).code,'SOURCE_CITATION_INVALID');assert.equal(saved,false);
 });
 

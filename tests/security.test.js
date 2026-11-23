@@ -5,7 +5,7 @@ import {execFileSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {pathToFileURL,fileURLToPath} from 'node:url';
-import {SECURITY_HEADERS,CSP_BASE} from '../worker/headers.js';
+import {SECURITY_HEADERS,CSP_BASE,createSecurityHeaders} from '../worker/headers.js';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 
@@ -22,6 +22,12 @@ test('CSP in the Worker headers, public/_headers and index.html agree and stay s
  assert.ok(!csp.includes('*'),'no wildcard origins in CSP');
  assert.ok(!/unsafe-eval/.test(csp)&&!/script-src[^;]*unsafe-inline/.test(csp));
  assert.match(SECURITY_HEADERS['Permissions-Policy'],/microphone=\(self\)/,'voice notes need the microphone');
+});
+
+test('CSP allows only the configured Supabase project for REST and realtime',()=>{
+ const csp=createSecurityHeaders('https://dev-project.supabase.co')['Content-Security-Policy'];
+ assert.ok(csp.includes("connect-src 'self' https://dev-project.supabase.co wss://dev-project.supabase.co;"));
+ assert.ok(!csp.includes('kioqgerkpbgntlbavtro')&&!csp.includes('*'));
 });
 
 test('built Worker adds security headers to every response and does not serve _headers',async()=>{

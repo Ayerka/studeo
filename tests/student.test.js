@@ -27,7 +27,7 @@ test('recurring events honor first date and end date without timezone shifts',()
 test('AI rejects missing auth and foreign material before model call',async()=>{
  let calls=[];const mock=async(url)=>{calls.push(url);if(url.endsWith('/user'))return Response.json({id:'A'});return Response.json([{user_id:'B',payload:{pages:[]}}]);};
  const missing=await handleStudy(new Request('https://site.test/api/study',{method:'POST'}),{},mock);assert.equal(missing.status,401);assert.equal(calls.length,0);
- const foreign=await handleStudy(new Request('https://site.test/api/study',{method:'POST',headers:{Authorization:'Bearer test'},body:JSON.stringify({materialId:'00000000-0000-0000-0000-000000000001'})}),{OPENAI_API_KEY:'fake'},mock);assert.equal(foreign.status,404);assert.equal(calls.length,2);
+ const foreign=await handleStudy(new Request('https://site.test/api/study',{method:'POST',headers:{Authorization:'Bearer test'},body:JSON.stringify({materialId:'00000000-0000-0000-0000-000000000001'})}),{OPENAI_API_KEY:'fake',SUPABASE_URL:'https://test.supabase.co',SUPABASE_PUBLISHABLE_KEY:'test'},mock);assert.equal(foreign.status,404);assert.equal(calls.length,2);
 });
 test('AI rejects fabricated citations and invalid answer indices',()=>{const p=[{page:1,text:'Ta długa definicja występuje w materiale źródłowym.'}],item={page:1,quote:p[0].text};const d={sections:[{...item,title:'A',text:'B'}],cards:[{...item,front:'Pytanie',back:'Odpowiedź'}],questions:[{...item,q:'?',options:['A','B','C'],answers:[0],why:'A'}]};assert.ok(validateStudy(structuredClone(d),p));assert.throws(()=>validateStudy({...structuredClone(d),cards:[{...item,front:'x',back:'y',quote:'Tego zdania nie ma w źródle.'}]},p));d.questions[0].answers=[8];assert.throws(()=>validateStudy(d,p));});
 
