@@ -1,0 +1,15 @@
+export type StudentView =
+  | 'home'
+  | 'subjects'
+  | 'reviews'
+  | 'tasks'
+  | 'calendar'
+  | 'notes'
+  | 'archive'
+  | 'plan'
+  | 'subject'
+  | 'entry'
+  | 'course-lesson'
+  | 'edit'
+  | 'courses'
+  | 'library';

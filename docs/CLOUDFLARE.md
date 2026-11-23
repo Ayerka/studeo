@@ -17,11 +17,11 @@ Ustaw zmienne builda:
 
 ```text
 NODE_VERSION=22
-VITE_SUPABASE_URL=https://kioqgerkpbgntlbavtro.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_nQNZs5zYdlqFyje_0yzUAQ_7Rot6RVN
+VITE_SUPABASE_URL=<URL projektu Supabase dla danego środowiska>
+VITE_SUPABASE_PUBLISHABLE_KEY=<klucz publishable tego samego projektu>
 ```
 
-To klucz publiczny aplikacji, nie sekret. Nie dodawaj klucza OpenAI ani service_role do zmiennych VITE. AI pozostaje w funkcji Supabase student-ai.
+Ustaw te wartości osobno dla developmentu i produkcji. Worker oraz CSP są budowane z tych samych zmiennych. To klucz publiczny aplikacji, nie sekret. Nie dodawaj klucza OpenAI ani service_role do zmiennych VITE. Funkcja `student-ai` pobiera adres i klucz z automatycznych zmiennych środowiskowych projektu Supabase, w którym jest wdrożona.
 
 Po pierwszym wdrożeniu zapisz rzeczywisty adres workers.dev. Dodaj go do dozwolonych przekierowań Supabase Auth; zachowaj dotychczasowe adresy, w tym adresy osobnej aplikacji włoskiego. Nie zmieniaj globalnego Site URL bez sprawdzenia wpływu na obie aplikacje.
 

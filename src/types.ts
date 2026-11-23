@@ -5,6 +5,7 @@ export interface QuizQuestion {
   answers?: number[];
   why: string;
   id?: string;
+  track?: number;
   lesson?: string;
   lessonTitle?: string;
   moduleId?: string;
@@ -33,6 +34,24 @@ export interface Lesson {
 }
 
 export type GlossaryItem = [string, string];
+
+export interface PublicCourseContent {
+  lessons: Lesson[];
+  glossary: GlossaryItem[];
+  lectureMulti: QuizQuestion[];
+}
+
+export interface PublicCourse {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  content: PublicCourseContent;
+  published: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface ProgressState {
   done: string[];
@@ -123,11 +142,18 @@ export interface StudentEntryPayload {
   building?: string;
   pages?: MaterialPage[];
   fileName?: string;
+  pdfPageRange?: string;
+  makeCourse?: boolean;
   path?: string;
   fileRemoved?: boolean;
   cards?: FlashCard[];
   sections?: { title?: string; page?: number; text: string; quote?: string }[];
   questions?: QuizQuestion[];
+  testAnswers?: Record<string, { selected?: number[]; correct: boolean; at: string }>;
+  practice?: Record<string, { correct: boolean; at: string }>;
+  testHistory?: { at: string; testAnswers?: Record<string, unknown>; practice?: Record<string, unknown> }[];
+  requestedCount?: number;
+  studyDays?: string[];
   method?: string;
   sourceId?: string;
   courseSnapshot?: CourseSnapshotMeta;
@@ -136,8 +162,8 @@ export interface StudentEntryPayload {
   };
   ai?: boolean;
   taskId?: string;
-  question?: string;
-  lessonDone?: Record<number, boolean>;
+  publicCourseSlug?: string;
+  publicCourseLessonId?: string;
 }
 
 export interface StudentEntry {

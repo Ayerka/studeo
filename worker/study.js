@@ -1,5 +1,4 @@
-const SUPABASE='https://kioqgerkpbgntlbavtro.supabase.co';
-const PUBLIC_KEY='sb_publishable_nQNZs5zYdlqFyje_0yzUAQ_7Rot6RVN';
+const supabaseConfig=env=>({SUPABASE:(env.SUPABASE_URL||'').replace(/\/+$/,''),PUBLIC_KEY:env.SUPABASE_PUBLISHABLE_KEY||env.SUPABASE_ANON_KEY||''});
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
 const str={type:'string'},num={type:'integer'},arr=items=>({type:'array',items});
 export const studySchema=obj({sections:arr(obj({title:str,text:str,page:num,quote:str})),cards:arr(obj({front:str,back:str,page:num,quote:str})),questions:arr(obj({q:str,options:arr(str),answers:arr(num),why:str,page:num,quote:str}))});
@@ -57,6 +56,7 @@ export async function handleStudy(request,env,requestFetch=fetch){
  if(request.method!=='POST')return json({error:'Użyj POST.'},405);
  if(Number(request.headers.get('content-length')||0)>1024)return json({error:'Za duże żądanie.'},413);
  const auth=request.headers.get('Authorization');if(!auth?.startsWith('Bearer '))return json({error:'Zaloguj się.'},401);
+ const {SUPABASE,PUBLIC_KEY}=supabaseConfig(env);if(!SUPABASE||!PUBLIC_KEY)return json({error:'Brak konfiguracji Supabase.'},503);
  const headers={Authorization:auth,apikey:PUBLIC_KEY,'Content-Type':'application/json'};
  const userResponse=await requestFetch(SUPABASE+'/auth/v1/user',{headers});if(!userResponse.ok)return json({error:'Sesja wygasła. Zaloguj się ponownie.'},401);
  const user=await userResponse.json();if(!user.id)return json({error:'Brak użytkownika.'},401);
@@ -81,6 +81,7 @@ export async function generateTaskHelp(task,question,key,requestFetch=fetch){
 export async function handleTaskHelp(request,env,requestFetch=fetch){
  if(request.method!=='POST')return json({error:'Użyj POST.'},405);
  const auth=request.headers.get('Authorization');if(!auth?.startsWith('Bearer '))return json({error:'Zaloguj się.'},401);
+ const {SUPABASE,PUBLIC_KEY}=supabaseConfig(env);if(!SUPABASE||!PUBLIC_KEY)return json({error:'Brak konfiguracji Supabase.'},503);
  const headers={Authorization:auth,apikey:PUBLIC_KEY,'Content-Type':'application/json'};
  try{
  let raw='',size=0;const reader=request.body?.getReader(),decoder=new TextDecoder();if(reader)for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>12000){await reader.cancel();return json({error:'Pytanie jest za długie.'},413);}raw+=decoder.decode(value,{stream:true});}raw+=decoder.decode();
@@ -99,6 +100,7 @@ export async function handleTaskHelp(request,env,requestFetch=fetch){
 export async function handleOcr(request,env,requestFetch=fetch){
  if(request.method!=='POST')return json({error:'Użyj POST.'},405);
  const auth=request.headers.get('Authorization');if(!auth?.startsWith('Bearer '))return json({error:'Zaloguj się.'},401);
+ const {SUPABASE,PUBLIC_KEY}=supabaseConfig(env);if(!SUPABASE||!PUBLIC_KEY)return json({error:'Brak konfiguracji Supabase.'},503);
  const headers={Authorization:auth,apikey:PUBLIC_KEY,'Content-Type':'application/json'};
  try{
   const u=await requestFetch(SUPABASE+'/auth/v1/user',{headers});if(!u.ok)return json({error:'Zaloguj się ponownie.'},401);const user=await u.json();if(!user.id)return json({error:'Zaloguj się ponownie.'},401);

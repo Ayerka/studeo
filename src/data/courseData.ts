@@ -1,6 +1,6 @@
 // Course data: Lessons, Glossary, Lecture Multi, Security+
 import type { Lesson, GlossaryItem, QuizQuestion } from "../types";
-import { SECURITY_PLUS, pickSecurityQuestions } from "../security-plus.js";
+import { SECURITY_PLUS, pickSecurityQuestions } from "../features/course/lib/security-plus";
 export { SECURITY_PLUS, pickSecurityQuestions };
 
 export const LESSONS: Lesson[] = [

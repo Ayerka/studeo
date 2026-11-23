@@ -1,6 +1,6 @@
 // Generated from worker/study.js; authenticated requests only.
-const SUPABASE='https://kioqgerkpbgntlbavtro.supabase.co';
-const PUBLIC_KEY='sb_publishable_nQNZs5zYdlqFyje_0yzUAQ_7Rot6RVN';
+const SUPABASE=Deno.env.get('SUPABASE_URL')?.replace(/\/+$/,'')||'';
+const PUBLIC_KEY=Deno.env.get('SUPABASE_PUBLISHABLE_KEY')||Deno.env.get('SUPABASE_ANON_KEY')||'';
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
 const str={type:'string'},num={type:'integer'},arr=items=>({type:'array',items});
 export const studySchema=obj({sections:arr(obj({title:str,text:str,page:num,quote:str})),cards:arr(obj({front:str,back:str,page:num,quote:str})),questions:arr(obj({q:str,options:arr(str),answers:arr(num),why:str,page:num,quote:str}))});
@@ -120,4 +120,4 @@ export async function handleOcr(request,env,requestFetch=fetch){
  }catch(e){return json({error:e.name==='TimeoutError'?'Odczyt trwał zbyt długo. Możesz ponowić tę stronę.':'Nie udało się odczytać strony. Dotychczasowy tekst pozostaje zapisany.'},502);}
 }
 
-Deno.serve(async request=>{const path=new URL(request.url).pathname;const env={OPENAI_API_KEY:Deno.env.get('OPENAI_API_KEY')};if(path.endsWith('/task-help'))return handleTaskHelp(request,env);if(path.endsWith('/ocr'))return handleOcr(request,env);if(path.endsWith('/study'))return handleStudy(request,env);return new Response('Not found',{status:404});});
+Deno.serve(async request=>{if(!SUPABASE||!PUBLIC_KEY)return new Response('Supabase configuration is missing.',{status:503});const path=new URL(request.url).pathname;const env={OPENAI_API_KEY:Deno.env.get('OPENAI_API_KEY')};if(path.endsWith('/task-help'))return handleTaskHelp(request,env);if(path.endsWith('/ocr'))return handleOcr(request,env);if(path.endsWith('/study'))return handleStudy(request,env);return new Response('Not found',{status:404});});
