@@ -1,29 +1,36 @@
 {
-  "name": "studeo",
-  "version": "0.1.0",
+  "name": "studeo-react",
   "private": true,
+  "version": "0.0.0",
   "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
+    "@base-ui/react": "^1.9.0",
+    "@fontsource-variable/geist": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.1",
+    "lucide-react": "^1.66.0",
+    "pdfjs-dist": "^6.4.299",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "pdfjs-dist": "^6.4.299"
+    "react-router-dom": "^7.18.6",
+    "shadcn": "^4.23.0",
+    "tailwindcss": "^4.3.3",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.3.0",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "jsdom": "^26.0.0",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2",
-    "vite": "^7.0.0"
-  },
-  "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "start": "vite --host 0.0.0.0",
-    "build": "vite build --outDir dist/client && node scripts/build-worker.mjs",
-    "preview": "vite preview --host 127.0.0.1",
-    "preview:production": "vite build --outDir dist/preview && vite preview --host 127.0.0.1 --outDir dist/preview",
-    "test": "node --import tsx --test tests/*.test.js"
+    "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.89.0",
+    "vite": "^8.3.5"
   }
 }

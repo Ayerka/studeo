@@ -35,6 +35,24 @@ export interface Lesson {
 
 export type GlossaryItem = [string, string];
 
+export interface PublicCourseContent {
+  lessons: Lesson[];
+  glossary: GlossaryItem[];
+  lectureMulti: QuizQuestion[];
+}
+
+export interface PublicCourse {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  content: PublicCourseContent;
+  published: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ProgressState {
   done: string[];
   flashKnown: string[];
@@ -125,6 +143,7 @@ export interface StudentEntryPayload {
   pages?: MaterialPage[];
   fileName?: string;
   pdfPageRange?: string;
+  makeCourse?: boolean;
   path?: string;
   fileRemoved?: boolean;
   cards?: FlashCard[];
@@ -143,8 +162,8 @@ export interface StudentEntryPayload {
   };
   ai?: boolean;
   taskId?: string;
-  question?: string;
-  lessonDone?: Record<number, boolean | { at?: string }>;
+  publicCourseSlug?: string;
+  publicCourseLessonId?: string;
 }
 
 export interface StudentEntry {

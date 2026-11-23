@@ -1,17 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+
 import { App } from './App';
-import './course.css';
-import './student.css';
-import './landing.css';
-import './account.css';
+import { Providers } from './app/providers';
+
 import './app.css';
 
-const rootElement = document.getElementById('root');
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-}
+ReactDOM.createRoot(
+  document.getElementById('root')!
+).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Providers>
+        <App />
+      </Providers>
+    </BrowserRouter>
+  </React.StrictMode>
+);
